@@ -6,6 +6,7 @@ export interface CameraRecord {
   title: string;
   sourceUrl: string;
   streamUrl: string;
+  previewUrl?: string;
   streamType: StreamType;
   lat: number;
   lng: number;

@@ -13,22 +13,23 @@ export const caltransAdapter: CameraAdapter = {
   operator: "California Department of Transportation",
   async fetch() {
     const params = new URLSearchParams({
-      where: "inService = 'True' AND currentImageURL IS NOT NULL",
+      where: "inService = 'True' AND streamingVideoURL LIKE '%.m3u8%'",
       outFields: "OBJECTID,locationName,nearbyPlace,longitude,latitude,direction,county,route,inService,streamingVideoURL,currentImageURL,currentImageUpdateFrequency,recordDate",
       returnGeometry: "false",
-      resultRecordCount: "750",
+      resultRecordCount: "2000",
       f: "json",
     });
     const response = await fetch(`${ENDPOINT}?${params}`, { next: { revalidate: 300 } });
     if (!response.ok) throw new Error(`Caltrans returned ${response.status}`);
     const payload = await response.json();
     return payload.features.map(({ attributes: a }: { attributes: Record<string, string | number | null> }): CameraRecord => {
-      const streamUrl = String(a.streamingVideoURL || a.currentImageURL);
+      const streamUrl = String(a.streamingVideoURL || a.currentImageURL).trim();
       return {
         id: `caltrans-${a.OBJECTID}`,
         title: String(a.locationName || `${a.route} camera`),
         sourceUrl: ENDPOINT,
         streamUrl,
+        previewUrl: a.currentImageURL ? String(a.currentImageURL) : undefined,
         streamType: streamType(streamUrl),
         lat: Number(a.latitude), lng: Number(a.longitude),
         operator: "Caltrans",

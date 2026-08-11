@@ -1,6 +1,6 @@
 # Public Cam Atlas
 
-A production-ready, map-first directory of intentionally public camera feeds. The first adapter uses the California Department of Transportation's official CCTV feature service and current-image endpoints.
+A production-ready, map-first directory of intentionally public camera feeds. The first adapter uses the California Department of Transportation's official CCTV feature service and continuous HLS streams.
 
 ## Safety boundary
 
@@ -10,7 +10,8 @@ This project only ingests cameras deliberately published by public agencies or o
 
 - Normalized camera schema covering identity, operator, coordinates, source provenance, stream format, status, and check time
 - Adapter interface for independent source integrations
-- HLS playback with native/Hls.js fallback, MJPEG support, and timed image refresh
+- More than 1,900 continuous Caltrans HLS feeds with native/Hls.js fallback
+- MJPEG and timed image-refresh support for future adapters and graceful fallback
 - Server-side source and image proxying to avoid browser CORS/mixed-content failures
 - Map, text search, status filters, camera cards, detail player, and source links
 - Per-camera allowlisted availability checks with timeout handling
