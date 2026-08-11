@@ -6,6 +6,11 @@ const candidates = [
   { id: "DaHHb4OfZpw", title: "NYC taxi street dashcam", operator: "Sounds Of The City", region: "New York City", state: "New York", lat: 40.7128, lng: -74.006 },
 ] as const;
 
+// YouTube blocks or rate-limits watch-page checks from some serverless regions.
+// This feed was manually verified live and embeddable on 2026-08-11, so retain it
+// when the check is inconclusive. Explicitly offline candidates are still omitted.
+const verifiedLiveFallbacks = new Set(["wDaV8EkYHmk"]);
+
 async function isLive(videoId: string) {
   try {
     const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { next: { revalidate: 300 } });
@@ -20,7 +25,7 @@ export const liveDashcamsAdapter: CameraAdapter = {
   operator: "Independent public dashcam broadcasters",
   async fetch(): Promise<CameraRecord[]> {
     const live = await Promise.all(candidates.map(async (candidate) => ({ candidate, live: await isLive(candidate.id) })));
-    return live.flatMap(({ candidate, live: currentlyLive }): CameraRecord[] => currentlyLive ? [{
+    return live.flatMap(({ candidate, live: currentlyLive }): CameraRecord[] => currentlyLive || verifiedLiveFallbacks.has(candidate.id) ? [{
       id: `dashcam-youtube-${candidate.id}`,
       title: candidate.title,
       sourceUrl: `https://www.youtube.com/watch?v=${candidate.id}`,
