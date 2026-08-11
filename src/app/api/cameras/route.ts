@@ -4,13 +4,15 @@ import { driveTexasAdapter } from "@/lib/adapters/drivetexas";
 import { ksatAdapter } from "@/lib/adapters/ksat";
 import { sanMarcosAdapter } from "@/lib/adapters/sanmarcos";
 import { sanAntonioPublicAdapter } from "@/lib/adapters/sanantonio-public";
+import { addTexasCountyNames } from "@/lib/county";
 
 export const revalidate = 300;
 export async function GET() {
   try {
     const adapters = [caltransAdapter, driveTexasAdapter, ksatAdapter, sanMarcosAdapter, sanAntonioPublicAdapter];
     const results = await Promise.allSettled(adapters.map((adapter) => adapter.fetch()));
-    const cameras = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+    const rawCameras = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+    const cameras = await addTexasCountyNames(rawCameras);
     const sources = adapters.map((adapter, index) => ({
       id: adapter.id,
       count: results[index].status === "fulfilled" ? results[index].value.length : 0,

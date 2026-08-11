@@ -24,10 +24,19 @@ export const sanAntonioPublicAdapter: CameraAdapter = {
       id: "texas-alamo-plaza", title: "Alamo Plaza Live Cam", sourceUrl: "https://www.thealamo.org/live-cam",
       streamUrl: "https://rtsp.me/embed/FQaa3Nd3/", streamType: "embed", lat: 29.4257, lng: -98.4861,
       operator: "The Alamo / Alamo Trust", sourcePage: "https://www.thealamo.org/live-cam", status: "unknown", lastChecked: null,
-      region: "San Antonio", state: "Texas", category: "tourism",
+      region: "San Antonio", state: "Texas", category: "landmark",
       publicationEvidence: "Embedded on The Alamo's official public Live Cam page",
       discoveryMethod: "Public web search", accessClassification: "verified_public", authentication: "none",
       inclusionRationale: "Official operator page intentionally labels and embeds the camera for public viewing",
+    }, {
+      id: "texas-san-antonio-skyline", title: "Downtown San Antonio Skyline", sourceUrl: "https://www.ksat.com/features/2019/12/30/live-camera-downtown-san-antonio/",
+      streamUrl: "https://public.earthcam.net/tJ90CoLmq7TzrY396Yd88LotqRGJFQ8oKI2EkE5DnEI!.tJ90CoLmq7TzrY396Yd88IQEt-U5iYkLrtMxBYSI35E!.tJ90CoLmq7TzrY396Yd88IR4_6Py5pbXly-5K9M1_vQ!",
+      streamType: "embed", lat: 29.4241, lng: -98.4936, operator: "KSAT / EarthCam",
+      sourcePage: "https://www.ksat.com/features/2019/12/30/live-camera-downtown-san-antonio/", status: "unknown", lastChecked: null,
+      region: "San Antonio", state: "Texas", category: "landmark",
+      publicationEvidence: "Embedded for public viewing on KSAT's Downtown San Antonio live-camera page",
+      discoveryMethod: "Official local broadcaster page", accessClassification: "verified_public", authentication: "none",
+      inclusionRationale: "KSAT intentionally publishes the EarthCam player on its public live-camera page without authentication or payment",
     }];
   },
 };

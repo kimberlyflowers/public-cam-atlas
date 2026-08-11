@@ -59,7 +59,7 @@ export default function CameraPanel({ camera, onClose, onPrevious, onNext, posit
     <div className="panel-body">
       <div className="panel-status"><span className={`status-dot ${health.status}`}/>{health.status === "checking" ? "Checking feed…" : health.status}</div>
       <h2>{camera.title}</h2>
-      <p><MapPin size={15}/>{camera.region}</p>
+      <p><MapPin size={15}/>{camera.region}{camera.county ? ` · ${camera.county}` : ""}</p>
       <div className="facts"><span><small>Operator</small>{camera.operator}</span><span><small>Type</small>{camera.category || "traffic"}</span><span><small>Format</small>{camera.streamType.replace("_", " ")}</span></div>
       <div className="coordinates">{camera.lat.toFixed(5)}, {camera.lng.toFixed(5)}</div>
       {camera.publicationEvidence && <p className="evidence"><Radio size={14}/>{camera.publicationEvidence}</p>}

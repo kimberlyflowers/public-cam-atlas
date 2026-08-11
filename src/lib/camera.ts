@@ -1,6 +1,6 @@
 export type StreamType = "hls" | "mjpeg" | "image_refresh" | "youtube" | "embed";
 export type CameraStatus = "online" | "offline" | "unknown";
-export type CameraCategory = "traffic" | "intersection" | "wildlife" | "airport" | "weather" | "tourism" | "parking" | "water";
+export type CameraCategory = "traffic" | "intersection" | "landmark" | "wildlife" | "airport" | "weather" | "tourism" | "parking" | "water";
 
 export interface CameraRecord {
   id: string;
@@ -16,6 +16,7 @@ export interface CameraRecord {
   status: CameraStatus;
   lastChecked: string | null;
   region: string;
+  county?: string;
   state: "California" | "Texas";
   category?: CameraCategory;
   publicationEvidence?: string;
