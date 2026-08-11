@@ -21,9 +21,9 @@ export default function Home() {
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [selected, setSelected] = useState<CameraRecord | null>(null);
   const [query, setQuery] = useState("");
-  const [state, setState] = useState("Texas");
+  const [state, setState] = useState("all");
   const [category, setCategory] = useState("all");
-  const [area, setArea] = useState("San Antonio Metro");
+  const [area, setArea] = useState("all");
   const [loading, setLoading] = useState(true);
   const [wallOpen, setWallOpen] = useState(false);
 
@@ -59,9 +59,9 @@ export default function Home() {
       <section className="workspace">
         <aside className="sidebar">
           <div className="sidebar-head">
-            <p className="eyebrow">San Antonio Metro</p>
+            <p className="eyebrow">California · Texas · San Antonio</p>
             <h1>See what’s happening, right now.</h1>
-            <p className="lede">Starts with verified public feeds across the San Antonio metro—not just one inventory or the county boundary.</p>
+            <p className="lede">Starts with the complete verified public-camera inventory. Narrow it to San Antonio Metro, Bexar County, Texas, California, or a camera type.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-row">
