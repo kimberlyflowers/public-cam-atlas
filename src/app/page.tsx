@@ -57,7 +57,7 @@ export default function Home() {
           </div>
           <div className="filter-row type-filter">
             <span><Camera size={14}/> Type</span>
-            {(["all", "traffic", "wildlife", "airport"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
+            {(["all", "traffic", "intersection", "wildlife", "airport"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
