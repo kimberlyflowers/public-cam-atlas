@@ -48,7 +48,13 @@ export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; sta
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img className="player" src={`/api/image?url=${encodeURIComponent(camera.streamUrl)}&t=${stamp}`} alt={`Current view from ${camera.title}`}/>
   </>;
-  return <div className="player-frame"><video className="player" ref={video} autoPlay muted controls playsInline onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>{playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Connecting…" : playback === "retrying" ? "Reconnecting…" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry</button>}</div>}</div>;
+  /* Live proxy URL is intentionally rendered without Next image optimization. */
+  /* eslint-disable @next/next/no-img-element */
+  return <div className="player-frame">
+    {playback === "unavailable" && camera.previewUrl && <img className="player" src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}&t=${stamp}`} alt={`Latest view from ${camera.title}`}/>}
+    <video className="player" ref={video} autoPlay muted controls playsInline style={playback === "unavailable" && camera.previewUrl ? { display: "none" } : undefined} onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
+    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Connecting…" : playback === "retrying" ? "Reconnecting…" : camera.previewUrl ? "Live video paused — showing latest official image" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
+  </div>;
 }
 
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {

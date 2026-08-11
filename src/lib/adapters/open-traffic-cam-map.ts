@@ -23,6 +23,9 @@ export const openTrafficCamMapAdapter: CameraAdapter = {
     const data = await response.json() as SourceData;
     const cameras: CameraRecord[] = [];
     for (const [state, counties] of Object.entries(data)) {
+      // Alabama is sourced directly from ALDOT's current ALGO v4 API. The
+      // OpenTrafficCamMap Alabama entries retain retired Wowza paths.
+      if (state === "Alabama") continue;
       for (const [county, entries] of Object.entries(counties)) {
         for (const [index, camera] of entries.entries()) {
           if (camera.format !== "M3U8" || !camera.url.startsWith("https://")) continue;
