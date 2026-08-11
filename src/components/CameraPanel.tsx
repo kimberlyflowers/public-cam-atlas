@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink, MapPin, Radio, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, MapPin, Radio, X } from "lucide-react";
 import Hls from "hls.js";
 import type { CameraRecord } from "@/lib/camera";
 
@@ -25,7 +25,7 @@ function Player({ camera }: { camera: CameraRecord }) {
   return <video className="player" ref={video} autoPlay muted controls playsInline/>;
 }
 
-export default function CameraPanel({ camera, onClose }: { camera: CameraRecord; onClose: () => void }) {
+export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {
   const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: "checking" });
   useEffect(() => { fetch(`/api/status?url=${encodeURIComponent(camera.streamUrl)}`).then(r => r.json()).then(setHealth).catch(() => setHealth({status:"unknown"})); }, [camera.streamUrl]);
   return <article className="detail-panel">
@@ -38,6 +38,11 @@ export default function CameraPanel({ camera, onClose }: { camera: CameraRecord;
       <div className="facts"><span><small>Operator</small>{camera.operator}</span><span><small>Type</small>{camera.category || "traffic"}</span><span><small>Format</small>{camera.streamType.replace("_", " ")}</span></div>
       <div className="coordinates">{camera.lat.toFixed(5)}, {camera.lng.toFixed(5)}</div>
       {camera.publicationEvidence && <p className="evidence"><Radio size={14}/>{camera.publicationEvidence}</p>}
+      <div className="sequence-controls">
+        <button onClick={onPrevious} aria-label="Previous camera"><ChevronLeft size={16}/> Previous</button>
+        <span>{position.toLocaleString()} of {total.toLocaleString()}</span>
+        <button onClick={onNext} aria-label="Next camera">Next <ChevronRight size={16}/></button>
+      </div>
       <div className="panel-actions"><a href={camera.sourcePage} target="_blank" rel="noreferrer"><ExternalLink size={15}/> Verify public source</a><span><Radio size={15}/> Public livestream</span></div>
     </div>
   </article>;
