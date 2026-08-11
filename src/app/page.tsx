@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Camera, Search, SlidersHorizontal, X } from "lucide-react";
+import { Camera, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import type { CameraRecord } from "@/lib/camera";
 import CameraPanel from "@/components/CameraPanel";
 
@@ -22,6 +22,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [state, setState] = useState("all");
   const [category, setCategory] = useState("all");
+  const [county, setCounty] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +33,9 @@ export default function Home() {
   }, []);
 
   const filtered = useMemo(() => cameras.filter((camera) => {
-    const haystack = `${camera.title} ${camera.operator} ${camera.region}`.toLowerCase();
-    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (category === "all" || (camera.category || "traffic") === category);
-  }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, category]);
+    const haystack = `${camera.title} ${camera.operator} ${camera.region} ${camera.county || ""}`.toLowerCase();
+    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (county === "all" || camera.county === county) && (category === "all" || (camera.category || "traffic") === category);
+  }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, county, category]);
 
   const selectedIndex = selected ? filtered.findIndex((camera) => camera.id === selected.id) : -1;
   const selectRelative = (offset: number) => {
@@ -63,9 +64,13 @@ export default function Home() {
             <span><SlidersHorizontal size={14}/> Region</span>
             {(["all", "California", "Texas"] as const).map((item) => <button key={item} className={state === item ? "active" : ""} onClick={() => { setState(item); setSelected(null); }}>{item}</button>)}
           </div>
+          <div className="filter-row">
+            <span><MapPin size={14}/> County</span>
+            {(["all", "Bexar County"] as const).map((item) => <button key={item} className={county === item ? "active" : ""} onClick={() => { setCounty(item); setSelected(null); }}>{item}</button>)}
+          </div>
           <div className="filter-row type-filter">
             <span><Camera size={14}/> Type</span>
-            {(["all", "traffic", "intersection", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
+            {(["all", "traffic", "intersection", "landmark", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
