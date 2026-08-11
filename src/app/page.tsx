@@ -13,6 +13,7 @@ export default function Home() {
   const [selected, setSelected] = useState<CameraRecord | null>(null);
   const [query, setQuery] = useState("");
   const [state, setState] = useState("all");
+  const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,15 +25,15 @@ export default function Home() {
 
   const filtered = useMemo(() => cameras.filter((camera) => {
     const haystack = `${camera.title} ${camera.operator} ${camera.region}`.toLowerCase();
-    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state);
-  }), [cameras, query, state]);
+    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (category === "all" || (camera.category || "traffic") === category);
+  }), [cameras, query, state, category]);
 
   return (
     <main className="app-shell">
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
-        <div className="source-pill"><span className="live-dot"/> Official feeds only</div>
-        <a className="about-link" href="https://www.txdot.gov/discover/live-traffic-cameras.html" target="_blank" rel="noreferrer">Source policy</a>
+        <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
+        <a className="about-link" href="https://www.ksat.com/ksatplus/" target="_blank" rel="noreferrer">Newest source</a>
       </header>
 
       <section className="workspace">
@@ -40,12 +41,16 @@ export default function Home() {
           <div className="sidebar-head">
             <p className="eyebrow">Live infrastructure</p>
             <h1>See what’s happening, right now.</h1>
-            <p className="lede">Publicly operated road cameras in one calm, searchable map.</p>
+            <p className="lede">Intentionally published traffic, wildlife, airport and community cameras in one searchable map.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-row">
             <span><SlidersHorizontal size={14}/> Region</span>
             {(["all", "California", "Texas"] as const).map((item) => <button key={item} className={state === item ? "active" : ""} onClick={() => { setState(item); setSelected(null); }}>{item}</button>)}
+          </div>
+          <div className="filter-row type-filter">
+            <span><Camera size={14}/> Type</span>
+            {(["all", "traffic", "wildlife", "airport"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
@@ -61,7 +66,7 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <footer>Sources are included only when published by a public operator. No IP scanning or private feeds.</footer>
+          <footer>Includes direct URLs and IP-hosted streams when an operator intentionally publishes them. No IP-range scanning, login bypasses, or accidentally exposed feeds.</footer>
         </aside>
         <div className="map-stage">
           <CameraMap cameras={filtered} selected={selected} onSelect={setSelected}/>

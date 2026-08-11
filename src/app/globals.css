@@ -26,6 +26,7 @@ h1 { max-width:320px; margin:0; font-family:Georgia, serif; font-size:34px; line
 .filter-row>span { display:flex; align-items:center; gap:5px; margin-right:3px; color:var(--muted); font-size:11px; }
 .filter-row button { border:1px solid var(--line); background:transparent; color:var(--muted); padding:5px 9px; border-radius:99px; font-size:10px; text-transform:capitalize; cursor:pointer; }
 .filter-row button.active { background:var(--ink); border-color:var(--ink); color:white; }
+.type-filter { margin-top:-7px; flex-wrap:wrap; }
 .result-meta { display:flex; align-items:baseline; gap:5px; padding:2px 4px 10px; font-size:11px; color:var(--muted); }
 .result-meta strong { color:var(--ink); font-size:14px; }.result-meta span { margin-left:auto; }
 .camera-list { min-height:0; overflow:auto; padding:0 3px 4px; scrollbar-width:thin; }
@@ -49,4 +50,5 @@ footer { padding:11px 5px 0; border-top:1px solid var(--line); color:#8b9893; fo
 .panel-body h2 { margin:0; padding-right:10px; font-family:Georgia,serif; font-size:23px; line-height:1.1; font-weight:500; letter-spacing:-.025em; }.panel-body>p { display:flex; align-items:center; gap:6px; margin:9px 0 16px; color:var(--muted); font-size:11px; }
 .facts { display:grid; grid-template-columns:1.3fr 1fr .7fr; gap:8px; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }.facts span { font-size:10px; text-transform:capitalize; }.facts small { display:block; margin-bottom:5px; color:#94a09c; font-size:8px; text-transform:uppercase; letter-spacing:.08em; }
 .coordinates { margin-top:12px; color:#71807b; font:10px monospace; }.panel-actions { display:flex; align-items:center; justify-content:space-between; margin-top:15px; }.panel-actions a,.panel-actions span { display:flex; align-items:center; gap:6px; color:#347e68; font-size:10px; text-decoration:none; }.panel-actions span { color:#8c9793; }
+.evidence { display:flex!important; align-items:flex-start!important; gap:6px!important; margin:11px 0 0!important; color:#347e68!important; font-size:10px!important; line-height:1.4; }
 @media (max-width:760px) { .app-shell{grid-template-rows:56px 1fr}.topbar{padding:0 14px}.source-pill{display:none}.workspace{display:block;position:relative}.sidebar{position:absolute;left:10px;right:10px;bottom:10px;height:42%;padding:15px;border:0;border-radius:17px;box-shadow:0 10px 40px #00181255}.sidebar-head,.filter-row,footer{display:none}.map-stage{height:100%}.result-meta{padding-top:10px}.detail-panel{top:10px;right:10px;width:calc(100% - 20px)} }
