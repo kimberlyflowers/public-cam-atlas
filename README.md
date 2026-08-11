@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Public Cam Atlas
 
-## Getting Started
+A production-ready, map-first directory of intentionally public camera feeds. The first adapter uses the California Department of Transportation's official CCTV feature service and current-image endpoints.
 
-First, run the development server:
+## Safety boundary
+
+This project only ingests cameras deliberately published by public agencies or operators for public viewing. It does not scan IP ranges, guess credentials, bypass access controls, or index accidentally exposed cameras. Every network proxy uses an explicit hostname allowlist.
+
+## Features
+
+- Normalized camera schema covering identity, operator, coordinates, source provenance, stream format, status, and check time
+- Adapter interface for independent source integrations
+- HLS playback with native/Hls.js fallback, MJPEG support, and timed image refresh
+- Server-side source and image proxying to avoid browser CORS/mixed-content failures
+- Map, text search, status filters, camera cards, detail player, and source links
+- Per-camera allowlisted availability checks with timeout handling
+- Responsive desktop and mobile layouts
+
+## Source adapter
+
+`src/lib/adapters/caltrans.ts` consumes Caltrans' public ArcGIS CCTV layer. Camera metadata and images remain hosted by Caltrans; this app does not redistribute an offline copy. The service identifies its content as Copyright © 2020 State of California. Review the operator's current terms before adding commercial reuse or bulk archival.
+
+Add another source by implementing the `CameraAdapter` interface in `src/lib/camera.ts`, normalizing its records, and explicitly adding its public media hostnames to the proxy allowlists.
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production check:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Official references
 
-## Learn More
+- [Caltrans CCTV ArcGIS service](https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/CCTV/MapServer/layers)
+- [Caltrans QuickMap camera viewer](https://cwwp2.dot.ca.gov/vm/iframemap.htm)
+- [511 Wisconsin API documentation](https://511wi.gov/developers/doc) — suitable for a future adapter after obtaining a developer key and accepting its agreement
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Application code is MIT licensed. Third-party camera metadata, imagery, tiles, and streams remain subject to their respective operators' terms and attributions.
