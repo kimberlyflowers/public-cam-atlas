@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-const ALLOWED = new Set(["cwwp2.dot.ca.gov", "wzmedia.dot.ca.gov", "pubads.g.doubleclick.net"]);
+const ALLOWED = new Set(["cwwp2.dot.ca.gov", "wzmedia.dot.ca.gov", "pubads.g.doubleclick.net", "usgs-nims-images.s3.amazonaws.com"]);
 const isAllowed = (url: URL) => ALLOWED.has(url.hostname) || /^s\d+\.us-east-1\.skyvdn\.com$/.test(url.hostname);
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("url");

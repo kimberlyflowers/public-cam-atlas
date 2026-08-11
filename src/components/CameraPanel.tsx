@@ -17,6 +17,7 @@ function Player({ camera }: { camera: CameraRecord }) {
       else if (Hls.isSupported()) { const hls = new Hls(); hls.loadSource(camera.streamUrl); hls.attachMedia(video.current); return () => hls.destroy(); }
     }
   }, [camera]);
+  if (camera.streamType === "embed") return <iframe className="player" src={camera.streamUrl} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
   if (camera.streamType === "youtube") {
     const videoId = new URL(camera.streamUrl).searchParams.get("v");
     return <iframe className="player" src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1`} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
@@ -30,9 +31,10 @@ function Player({ camera }: { camera: CameraRecord }) {
 }
 
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {
-  const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: camera.streamType === "youtube" ? "online" : "checking" });
+  const embedded = camera.streamType === "youtube" || camera.streamType === "embed";
+  const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: embedded ? "online" : "checking" });
   useEffect(() => {
-    if (camera.streamType === "youtube") return;
+    if (camera.streamType === "youtube" || camera.streamType === "embed") return;
     fetch(`/api/status?url=${encodeURIComponent(camera.streamUrl)}`).then(r => r.json()).then(setHealth).catch(() => setHealth({status:"unknown"}));
   }, [camera.streamUrl, camera.streamType]);
   return <article className="detail-panel">
@@ -45,6 +47,7 @@ export default function CameraPanel({ camera, onClose, onPrevious, onNext, posit
       <div className="facts"><span><small>Operator</small>{camera.operator}</span><span><small>Type</small>{camera.category || "traffic"}</span><span><small>Format</small>{camera.streamType.replace("_", " ")}</span></div>
       <div className="coordinates">{camera.lat.toFixed(5)}, {camera.lng.toFixed(5)}</div>
       {camera.publicationEvidence && <p className="evidence"><Radio size={14}/>{camera.publicationEvidence}</p>}
+      <div className="provenance"><span><small>Discovery</small>{camera.discoveryMethod || "Public operator dataset"}</span><span><small>Access</small>{camera.authentication === "required" ? "Authentication required" : "No authentication or paywall"}</span><span><small>Classification</small>{camera.accessClassification === "public_reachable_intent_unclear" ? "Publicly reachable — intent unclear" : "Verified public"}</span><p>{camera.inclusionRationale || camera.publicationEvidence || "Included from a publicly accessible operator source"}</p></div>
       <div className="sequence-controls">
         <button onClick={onPrevious} aria-label="Previous camera"><ChevronLeft size={16}/> Previous</button>
         <span>{position.toLocaleString()} of {total.toLocaleString()}</span>

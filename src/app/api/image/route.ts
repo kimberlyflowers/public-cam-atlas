@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED = new Set(["cwwp2.dot.ca.gov"]);
+const ALLOWED = new Set(["cwwp2.dot.ca.gov", "usgs-nims-images.s3.amazonaws.com"]);
 const fallback = () => new NextResponse(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="#193029"/><path d="M292 151h56l17 22h29v75H246v-75h29z" fill="none" stroke="#688078" stroke-width="8"/><circle cx="320" cy="208" r="25" fill="none" stroke="#688078" stroke-width="8"/><text x="320" y="290" text-anchor="middle" fill="#8da098" font-family="Arial" font-size="16">FEED TEMPORARILY UNAVAILABLE</text></svg>`, { headers: { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=30" } });
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("url");

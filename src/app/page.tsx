@@ -40,7 +40,7 @@ export default function Home() {
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
-        <a className="about-link" href="https://www.ksat.com/ksatplus/" target="_blank" rel="noreferrer">Newest source</a>
+        <a className="about-link" href="/sources">Source decisions</a>
       </header>
 
       <section className="workspace">
@@ -57,7 +57,7 @@ export default function Home() {
           </div>
           <div className="filter-row type-filter">
             <span><Camera size={14}/> Type</span>
-            {(["all", "traffic", "intersection", "wildlife", "airport"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
+            {(["all", "traffic", "intersection", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
