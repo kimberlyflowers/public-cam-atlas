@@ -4,19 +4,40 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin, Maximize2, Minimize2, 
 import Hls from "hls.js";
 import type { CameraRecord } from "@/lib/camera";
 
-export function Player({ camera }: { camera: CameraRecord }) {
+export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; startDelayMs?: number }) {
   const video = useRef<HTMLVideoElement>(null);
   const [stamp, setStamp] = useState(0);
+  const [playback, setPlayback] = useState<"connecting" | "playing" | "retrying" | "unavailable">("connecting");
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (camera.streamType === "image_refresh") {
       const timer = setInterval(() => setStamp(Date.now()), (camera.refreshSeconds || 30) * 1000);
       return () => clearInterval(timer);
     }
     if (camera.streamType === "hls" && video.current) {
-      if (video.current.canPlayType("application/vnd.apple.mpegurl")) video.current.src = camera.streamUrl;
-      else if (Hls.isSupported()) { const hls = new Hls(); hls.loadSource(camera.streamUrl); hls.attachMedia(video.current); return () => hls.destroy(); }
+      const element = video.current;
+      let hls: Hls | undefined;
+      let retries = 0;
+      let retryTimer: ReturnType<typeof setTimeout> | undefined;
+      const startTimer = setTimeout(() => {
+        setPlayback("connecting");
+        if (element.canPlayType("application/vnd.apple.mpegurl")) { element.src = camera.streamUrl; element.play().catch(() => undefined); return; }
+        if (!Hls.isSupported()) { setPlayback("unavailable"); return; }
+        hls = new Hls({ lowLatencyMode: false, maxBufferLength: 12, backBufferLength: 0, liveSyncDurationCount: 2, liveMaxLatencyDurationCount: 5, manifestLoadingTimeOut: 8000, levelLoadingTimeOut: 8000, fragLoadingTimeOut: 10000 });
+        hls.loadSource(camera.streamUrl);
+        hls.attachMedia(element);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => element.play().catch(() => undefined));
+        hls.on(Hls.Events.ERROR, (_event, data) => {
+          if (!data.fatal) return;
+          if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { setPlayback("retrying"); hls?.recoverMediaError(); return; }
+          if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retries < 2) { retries += 1; setPlayback("retrying"); retryTimer = setTimeout(() => hls?.startLoad(), retries * 1500); return; }
+          setPlayback("unavailable");
+          hls?.destroy();
+        });
+      }, startDelayMs);
+      return () => { clearTimeout(startTimer); if (retryTimer) clearTimeout(retryTimer); hls?.destroy(); element.removeAttribute("src"); element.load(); };
     }
-  }, [camera]);
+  }, [camera, attempt, startDelayMs]);
   if (camera.streamType === "embed") return <iframe className="player" src={camera.streamUrl} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
   if (camera.streamType === "youtube") {
     const videoId = new URL(camera.streamUrl).searchParams.get("v");
@@ -27,7 +48,7 @@ export function Player({ camera }: { camera: CameraRecord }) {
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img className="player" src={`/api/image?url=${encodeURIComponent(camera.streamUrl)}&t=${stamp}`} alt={`Current view from ${camera.title}`}/>
   </>;
-  return <video className="player" ref={video} autoPlay muted controls playsInline/>;
+  return <div className="player-frame"><video className="player" ref={video} autoPlay muted controls playsInline onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>{playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Connecting…" : playback === "retrying" ? "Reconnecting…" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry</button>}</div>}</div>;
 }
 
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {

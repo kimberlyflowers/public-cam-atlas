@@ -45,7 +45,7 @@ export default function VideoWall({ cameras, onClose, onSelect }: { cameras: Cam
       {Array.from({ length: WALL_SIZE }, (_, index) => {
         const camera = visible[index];
         return camera ? <article className="wall-tile" key={camera.id}>
-          <Player camera={camera}/>
+          <Player camera={camera} startDelayMs={index * 300}/>
           <button className="wall-label" onClick={() => onSelect(camera)}><strong>{camera.title}</strong><span>{camera.region}{camera.county ? ` · ${camera.county}` : ""}</span></button>
         </article> : <div className="wall-tile wall-empty" key={`empty-${index}`}>No camera</div>;
       })}
