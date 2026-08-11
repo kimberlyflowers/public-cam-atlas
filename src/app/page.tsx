@@ -21,9 +21,9 @@ export default function Home() {
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [selected, setSelected] = useState<CameraRecord | null>(null);
   const [query, setQuery] = useState("");
-  const [state, setState] = useState("all");
+  const [state, setState] = useState("Texas");
   const [category, setCategory] = useState("all");
-  const [county, setCounty] = useState("all");
+  const [county, setCounty] = useState("Bexar County");
   const [loading, setLoading] = useState(true);
   const [wallOpen, setWallOpen] = useState(false);
 
@@ -58,9 +58,9 @@ export default function Home() {
       <section className="workspace">
         <aside className="sidebar">
           <div className="sidebar-head">
-            <p className="eyebrow">Live infrastructure</p>
+            <p className="eyebrow">San Antonio · Bexar County</p>
             <h1>See what’s happening, right now.</h1>
-            <p className="lede">Intentionally published traffic, wildlife, airport and community cameras in one searchable map.</p>
+            <p className="lede">Starts with every verified public Bexar-area feed. Expand the filters to browse the rest of Texas and California.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-row">
@@ -75,7 +75,7 @@ export default function Home() {
             <span><Camera size={14}/> Type</span>
             {(["all", "traffic", "intersection", "landmark", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
-          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
+          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{county !== "all" ? county : state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
             {loading ? Array.from({length: 6}).map((_, i) => <div className="skeleton" key={i}/>) : filtered.slice(0, 80).map((camera) => (
               <button className={`camera-card ${selected?.id === camera.id ? "selected" : ""}`} key={camera.id} onClick={() => setSelected(camera)}>
