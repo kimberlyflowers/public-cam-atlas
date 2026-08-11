@@ -4,14 +4,21 @@ import { driveTexasAdapter } from "@/lib/adapters/drivetexas";
 import { ksatAdapter } from "@/lib/adapters/ksat";
 import { sanMarcosAdapter } from "@/lib/adapters/sanmarcos";
 import { sanAntonioPublicAdapter } from "@/lib/adapters/sanantonio-public";
+import { openTrafficCamMapAdapter } from "@/lib/adapters/open-traffic-cam-map";
 import { addTexasCountyNames } from "@/lib/county";
 
 export const revalidate = 300;
 export async function GET() {
   try {
-    const adapters = [caltransAdapter, driveTexasAdapter, ksatAdapter, sanMarcosAdapter, sanAntonioPublicAdapter];
+    const adapters = [caltransAdapter, driveTexasAdapter, ksatAdapter, sanMarcosAdapter, sanAntonioPublicAdapter, openTrafficCamMapAdapter];
     const results = await Promise.allSettled(adapters.map((adapter) => adapter.fetch()));
-    const rawCameras = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+    const combined = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+    const seenStreams = new Set<string>();
+    const rawCameras = combined.filter((camera) => {
+      if (seenStreams.has(camera.streamUrl)) return false;
+      seenStreams.add(camera.streamUrl);
+      return true;
+    });
     const cameras = await addTexasCountyNames(rawCameras);
     const sources = adapters.map((adapter, index) => ({
       id: adapter.id,

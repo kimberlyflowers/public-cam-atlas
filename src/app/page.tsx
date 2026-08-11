@@ -27,6 +27,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [wallOpen, setWallOpen] = useState(false);
 
+  const states = useMemo(() => [...new Set(cameras.map((camera) => camera.state))].sort(), [cameras]);
+
   useEffect(() => {
     fetch("/api/cameras").then((r) => r.json()).then((data) => {
       setCameras(data.cameras ?? []);
@@ -60,17 +62,17 @@ export default function Home() {
       <section className="workspace">
         <aside className="sidebar">
           <div className="sidebar-head">
-            <p className="eyebrow">California · Texas · San Antonio</p>
+            <p className="eyebrow">United States public cameras</p>
             <h1>See what’s happening, right now.</h1>
             <p className="lede">Starts with the complete verified public-camera inventory. Narrow it to San Antonio Metro, Bexar County, Texas, California, or a camera type.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-grid">
-            <label><span><SlidersHorizontal size={13}/> Region</span><select value={state} onChange={(event) => { const value = event.target.value; setState(value); if (value === "California") setArea("all"); setSelected(null); }}><option value="all">All regions</option><option value="Texas">Texas</option><option value="California">California</option></select></label>
+            <label><span><SlidersHorizontal size={13}/> Region</span><select value={state} onChange={(event) => { const value = event.target.value; setState(value); if (value !== "Texas") setArea("all"); setSelected(null); }}><option value="all">All regions</option>{states.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
             <label><span><MapPin size={13}/> Area</span><select value={area} onChange={(event) => { const value = event.target.value; setArea(value); if (value !== "all") setState("Texas"); setSelected(null); }}><option value="all">All areas</option><option value="San Antonio Metro">San Antonio Metro</option><option value="San Antonio TransGuide">San Antonio TransGuide</option><option value="Bexar County">Bexar County</option></select></label>
             <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="public_places">Public places</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
           </div>
-          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "CA + TX" : state}</span></div>
+          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "United States" : state}</span></div>
           <div className="camera-list">
             {loading ? Array.from({length: 6}).map((_, i) => <div className="skeleton" key={i}/>) : filtered.slice(0, 80).map((camera) => (
               <button className={`camera-card ${selected?.id === camera.id ? "selected" : ""}`} key={camera.id} onClick={() => setSelected(camera)}>

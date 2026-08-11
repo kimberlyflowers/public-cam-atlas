@@ -9,6 +9,7 @@ const exclusions = [
 ] as const;
 
 const audit = [
+  ["OpenTrafficCamMap", "MIT-licensed GitHub dataset", "Continuous HLS feeds from additional state transportation authorities are included and exact stream URLs are deduplicated against direct sources"],
   ["TxDOT DriveTexas", "Primary road inventory", "Direct HLS and image feeds included"],
   ["KSAT public livestream catalog", "Independent broadcaster inventory", "Zoo, airport, and TransGuide continuous streams included; two retired city-camera URLs were rejected after returning 404"],
   ["USGS and OpenCCTV", "Government feeds plus directory cross-check", "Five unique water cameras included; duplicate TxDOT entries were not counted twice"],

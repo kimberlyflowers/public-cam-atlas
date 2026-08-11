@@ -17,7 +17,7 @@ export interface CameraRecord {
   lastChecked: string | null;
   region: string;
   county?: string;
-  state: "California" | "Texas";
+  state: string;
   category?: CameraCategory;
   publicationEvidence?: string;
   discoveryMethod?: string;
