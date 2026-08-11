@@ -49,6 +49,8 @@ export const driveTexasAdapter: CameraAdapter = {
         lastChecked: null,
         region: jurisdiction,
         state: "Texas",
+        category: "traffic",
+        publicationEvidence: "Published on the official DriveTexas traveler map",
       });
     }
     return cameras;
