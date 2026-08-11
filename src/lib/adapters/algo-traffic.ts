@@ -15,7 +15,7 @@ type AlgoCamera = {
     direction?: string;
   };
   responsibleRegion?: string;
-  playbackUrls?: { hls?: string };
+  playbackUrls?: { hls?: string; dash?: string };
   accessLevel?: string;
   permLink?: string;
   snapshotImageUrl?: string;
@@ -43,9 +43,10 @@ export const algoTrafficAdapter: CameraAdapter = {
         id: `algo-${camera.id}`,
         title,
         sourceUrl: API_URL,
-        streamUrl: hls,
+        streamUrl: camera.snapshotImageUrl!,
         previewUrl: camera.snapshotImageUrl,
-        streamType: "hls",
+        streamType: "image_refresh",
+        refreshSeconds: 5,
         lat: location.latitude,
         lng: location.longitude,
         operator: "Alabama Department of Transportation (ALDOT) / ALGO Traffic",
@@ -60,7 +61,7 @@ export const algoTrafficAdapter: CameraAdapter = {
         discoveryMethod: "Official ALDOT public camera API",
         accessClassification: "verified_public",
         authentication: "none",
-        inclusionRationale: "Current public HLS feed published by ALDOT through ALGO Traffic",
+        inclusionRationale: "Current official ALDOT camera image; the source link opens ALGO's DRM-protected continuous player",
       }];
     });
   },

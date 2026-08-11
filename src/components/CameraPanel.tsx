@@ -96,7 +96,7 @@ export default function CameraPanel({ camera, onClose, onPrevious, onNext, posit
         <span>{position.toLocaleString()} of {total.toLocaleString()}</span>
         <button onClick={onNext} aria-label="Next nearby camera">Next <ChevronRight size={16}/></button>
       </div>
-      <div className="panel-actions"><a href={camera.sourcePage} target="_blank" rel="noreferrer"><ExternalLink size={15}/> Verify public source</a><span><Radio size={15}/> Public livestream</span></div>
+      <div className="panel-actions"><a href={camera.sourcePage} target="_blank" rel="noreferrer"><ExternalLink size={15}/>{camera.state === "Alabama" ? "Open ALDOT live video" : "Verify public source"}</a><span><Radio size={15}/>{camera.streamType === "image_refresh" ? "Live camera image" : "Public livestream"}</span></div>
     </div>
   </article>;
 }
