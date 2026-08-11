@@ -1,6 +1,6 @@
-export type StreamType = "hls" | "mjpeg" | "image_refresh" | "youtube";
+export type StreamType = "hls" | "mjpeg" | "image_refresh" | "youtube" | "embed";
 export type CameraStatus = "online" | "offline" | "unknown";
-export type CameraCategory = "traffic" | "intersection" | "wildlife" | "airport" | "weather" | "tourism" | "parking";
+export type CameraCategory = "traffic" | "intersection" | "wildlife" | "airport" | "weather" | "tourism" | "parking" | "water";
 
 export interface CameraRecord {
   id: string;
@@ -19,6 +19,10 @@ export interface CameraRecord {
   state: "California" | "Texas";
   category?: CameraCategory;
   publicationEvidence?: string;
+  discoveryMethod?: string;
+  accessClassification?: "verified_public" | "public_reachable_intent_unclear";
+  authentication?: "none" | "required";
+  inclusionRationale?: string;
   refreshSeconds?: number;
 }
 
