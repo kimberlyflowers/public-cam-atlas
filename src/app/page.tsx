@@ -64,17 +64,10 @@ export default function Home() {
             <p className="lede">Starts with the complete verified public-camera inventory. Narrow it to San Antonio Metro, Bexar County, Texas, California, or a camera type.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
-          <div className="filter-row">
-            <span><SlidersHorizontal size={14}/> Region</span>
-            {(["all", "California", "Texas"] as const).map((item) => <button key={item} className={state === item ? "active" : ""} onClick={() => { setState(item); setSelected(null); }}>{item}</button>)}
-          </div>
-          <div className="filter-row">
-            <span><MapPin size={14}/> Area</span>
-            {(["all", "San Antonio Metro", "Bexar County"] as const).map((item) => <button key={item} className={area === item ? "active" : ""} onClick={() => { setArea(item); setSelected(null); }}>{item}</button>)}
-          </div>
-          <div className="filter-row type-filter">
-            <span><Camera size={14}/> Type</span>
-            {(["all", "traffic", "intersection", "landmark", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
+          <div className="filter-grid">
+            <label><span><SlidersHorizontal size={13}/> Region</span><select value={state} onChange={(event) => { const value = event.target.value; setState(value); if (value === "California") setArea("all"); setSelected(null); }}><option value="all">All regions</option><option value="Texas">Texas</option><option value="California">California</option></select></label>
+            <label><span><MapPin size={13}/> Area</span><select value={area} onChange={(event) => { const value = event.target.value; setArea(value); if (value !== "all") setState("Texas"); setSelected(null); }}><option value="all">All areas</option><option value="San Antonio Metro">San Antonio Metro</option><option value="Bexar County">Bexar County</option></select></label>
+            <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
