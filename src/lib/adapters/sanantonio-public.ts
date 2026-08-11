@@ -21,6 +21,22 @@ export const sanAntonioPublicAdapter: CameraAdapter = {
       inclusionRationale: "Government-hosted feed, publicly indexed, and accessible without authentication or payment",
     }));
     return [...water, {
+      id: "texas-bracken-cave-entrance", title: "Bracken Cave Entrance Live Cam", sourceUrl: "https://www.youtube.com/watch?v=jrIrspc_5RI",
+      streamUrl: "https://www.youtube.com/watch?v=jrIrspc_5RI", streamType: "youtube", lat: 29.6885, lng: -98.3487,
+      operator: "Bat Conservation International / Explore.org", sourcePage: "https://www.batcon.org/experience-bats/the-bat-channel/", status: "unknown", lastChecked: null,
+      region: "San Antonio", state: "Texas", category: "wildlife",
+      publicationEvidence: "Official Bat Conservation International page labels this as Bracken Cave Entrance (Live)",
+      discoveryMethod: "Official operator live-camera page", accessClassification: "verified_public", authentication: "none",
+      inclusionRationale: "The preserve operator intentionally embeds this continuous public livestream",
+    }, {
+      id: "texas-bracken-cave-interior", title: "Bracken Cave Interior Live Cam", sourceUrl: "https://www.youtube.com/watch?v=Ditnw8PTZUU",
+      streamUrl: "https://www.youtube.com/watch?v=Ditnw8PTZUU", streamType: "youtube", lat: 29.6887, lng: -98.3485,
+      operator: "Bat Conservation International / Explore.org", sourcePage: "https://www.batcon.org/experience-bats/the-bat-channel/", status: "unknown", lastChecked: null,
+      region: "San Antonio", state: "Texas", category: "wildlife",
+      publicationEvidence: "Official Bat Conservation International page labels this as Bracken Cave Interior (Live)",
+      discoveryMethod: "Official operator live-camera page", accessClassification: "verified_public", authentication: "none",
+      inclusionRationale: "The preserve operator intentionally embeds this continuous public livestream",
+    }, {
       id: "texas-alamo-plaza", title: "Alamo Plaza Live Cam", sourceUrl: "https://www.thealamo.org/live-cam",
       streamUrl: "https://rtsp.me/embed/FQaa3Nd3/", streamType: "embed", lat: 29.4257, lng: -98.4861,
       operator: "The Alamo / Alamo Trust", sourcePage: "https://www.thealamo.org/live-cam", status: "unknown", lastChecked: null,

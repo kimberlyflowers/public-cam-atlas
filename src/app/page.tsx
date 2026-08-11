@@ -23,7 +23,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [state, setState] = useState("Texas");
   const [category, setCategory] = useState("all");
-  const [county, setCounty] = useState("Bexar County");
+  const [area, setArea] = useState("San Antonio Metro");
   const [loading, setLoading] = useState(true);
   const [wallOpen, setWallOpen] = useState(false);
 
@@ -36,8 +36,9 @@ export default function Home() {
 
   const filtered = useMemo(() => cameras.filter((camera) => {
     const haystack = `${camera.title} ${camera.operator} ${camera.region} ${camera.county || ""}`.toLowerCase();
-    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (county === "all" || camera.county === county) && (category === "all" || (camera.category || "traffic") === category);
-  }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, county, category]);
+    const inArea = area === "all" || (area === "San Antonio Metro" ? camera.region === "San Antonio" || camera.county === "Bexar County" : camera.county === area);
+    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && inArea && (category === "all" || (camera.category || "traffic") === category);
+  }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, area, category]);
 
   const selectedIndex = selected ? filtered.findIndex((camera) => camera.id === selected.id) : -1;
   const selectRelative = (offset: number) => {
@@ -58,9 +59,9 @@ export default function Home() {
       <section className="workspace">
         <aside className="sidebar">
           <div className="sidebar-head">
-            <p className="eyebrow">San Antonio · Bexar County</p>
+            <p className="eyebrow">San Antonio Metro</p>
             <h1>See what’s happening, right now.</h1>
-            <p className="lede">Starts with every verified public Bexar-area feed. Expand the filters to browse the rest of Texas and California.</p>
+            <p className="lede">Starts with verified public feeds across the San Antonio metro—not just one inventory or the county boundary.</p>
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-row">
@@ -68,14 +69,14 @@ export default function Home() {
             {(["all", "California", "Texas"] as const).map((item) => <button key={item} className={state === item ? "active" : ""} onClick={() => { setState(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="filter-row">
-            <span><MapPin size={14}/> County</span>
-            {(["all", "Bexar County"] as const).map((item) => <button key={item} className={county === item ? "active" : ""} onClick={() => { setCounty(item); setSelected(null); }}>{item}</button>)}
+            <span><MapPin size={14}/> Area</span>
+            {(["all", "San Antonio Metro", "Bexar County"] as const).map((item) => <button key={item} className={area === item ? "active" : ""} onClick={() => { setArea(item); setSelected(null); }}>{item}</button>)}
           </div>
           <div className="filter-row type-filter">
             <span><Camera size={14}/> Type</span>
             {(["all", "traffic", "intersection", "landmark", "wildlife", "airport", "tourism", "water"] as const).map((item) => <button key={item} className={category === item ? "active" : ""} onClick={() => { setCategory(item); setSelected(null); }}>{item}</button>)}
           </div>
-          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{county !== "all" ? county : state === "all" ? "CA + TX" : state}</span></div>
+          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
             {loading ? Array.from({length: 6}).map((_, i) => <div className="skeleton" key={i}/>) : filtered.slice(0, 80).map((camera) => (
               <button className={`camera-card ${selected?.id === camera.id ? "selected" : ""}`} key={camera.id} onClick={() => setSelected(camera)}>
@@ -98,7 +99,7 @@ export default function Home() {
         </div>
       </section>
       {wallOpen && (
-        <VideoWall key={`${query}-${state}-${county}-${category}`} cameras={filtered} onClose={() => setWallOpen(false)} onSelect={(camera) => { setWallOpen(false); setSelected(camera); }}/>
+        <VideoWall key={`${query}-${state}-${area}-${category}`} cameras={filtered} onClose={() => setWallOpen(false)} onSelect={(camera) => { setWallOpen(false); setSelected(camera); }}/>
       )}
     </main>
   );
