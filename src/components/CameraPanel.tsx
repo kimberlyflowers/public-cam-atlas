@@ -17,6 +17,10 @@ function Player({ camera }: { camera: CameraRecord }) {
       else if (Hls.isSupported()) { const hls = new Hls(); hls.loadSource(camera.streamUrl); hls.attachMedia(video.current); return () => hls.destroy(); }
     }
   }, [camera]);
+  if (camera.streamType === "youtube") {
+    const videoId = new URL(camera.streamUrl).searchParams.get("v");
+    return <iframe className="player" src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1`} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
+  }
   if (camera.streamType === "image_refresh") return <>
     {/* Live proxy URL is not compatible with static image optimization. */}
     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -26,8 +30,11 @@ function Player({ camera }: { camera: CameraRecord }) {
 }
 
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {
-  const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: "checking" });
-  useEffect(() => { fetch(`/api/status?url=${encodeURIComponent(camera.streamUrl)}`).then(r => r.json()).then(setHealth).catch(() => setHealth({status:"unknown"})); }, [camera.streamUrl]);
+  const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: camera.streamType === "youtube" ? "online" : "checking" });
+  useEffect(() => {
+    if (camera.streamType === "youtube") return;
+    fetch(`/api/status?url=${encodeURIComponent(camera.streamUrl)}`).then(r => r.json()).then(setHealth).catch(() => setHealth({status:"unknown"}));
+  }, [camera.streamUrl, camera.streamType]);
   return <article className="detail-panel">
     <button className="close" onClick={onClose} aria-label="Close"><X size={18}/></button>
     <Player camera={camera}/>

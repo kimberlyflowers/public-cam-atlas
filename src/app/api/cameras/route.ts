@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { caltransAdapter } from "@/lib/adapters/caltrans";
 import { driveTexasAdapter } from "@/lib/adapters/drivetexas";
 import { ksatAdapter } from "@/lib/adapters/ksat";
+import { sanMarcosAdapter } from "@/lib/adapters/sanmarcos";
 
 export const revalidate = 300;
 export async function GET() {
   try {
-    const adapters = [caltransAdapter, driveTexasAdapter, ksatAdapter];
+    const adapters = [caltransAdapter, driveTexasAdapter, ksatAdapter, sanMarcosAdapter];
     const results = await Promise.allSettled(adapters.map((adapter) => adapter.fetch()));
     const cameras = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
     const sources = adapters.map((adapter, index) => ({

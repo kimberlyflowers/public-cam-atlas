@@ -1,6 +1,6 @@
-export type StreamType = "hls" | "mjpeg" | "image_refresh";
+export type StreamType = "hls" | "mjpeg" | "image_refresh" | "youtube";
 export type CameraStatus = "online" | "offline" | "unknown";
-export type CameraCategory = "traffic" | "wildlife" | "airport" | "weather" | "tourism" | "parking";
+export type CameraCategory = "traffic" | "intersection" | "wildlife" | "airport" | "weather" | "tourism" | "parking";
 
 export interface CameraRecord {
   id: string;
