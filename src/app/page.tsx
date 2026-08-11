@@ -53,7 +53,7 @@ export default function Home() {
               <button className={`camera-card ${selected?.id === camera.id ? "selected" : ""}`} key={camera.id} onClick={() => setSelected(camera)}>
                 {/* Camera snapshots are live proxy URLs, so Next image optimization is intentionally bypassed. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/image?url=${encodeURIComponent(camera.streamUrl)}`} alt=""/>
+                <img src={`/api/image?url=${encodeURIComponent(camera.previewUrl || camera.streamUrl)}`} alt=""/>
                 <span className="card-copy"><strong>{camera.title}</strong><small>{camera.region} · {camera.streamType.replace("_", " ")}</small></span>
                 <span className={`status-dot ${camera.status}`}/>
               </button>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-const ALLOWED = new Set(["cwwp2.dot.ca.gov"]);
+const ALLOWED = new Set(["cwwp2.dot.ca.gov", "wzmedia.dot.ca.gov"]);
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("url");
   if (!raw) return NextResponse.json({ status: "unknown" }, { status: 400 });
