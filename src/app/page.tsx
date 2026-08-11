@@ -2,9 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Camera, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { Camera, Grid3X3, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import type { CameraRecord } from "@/lib/camera";
 import CameraPanel from "@/components/CameraPanel";
+import VideoWall from "@/components/VideoWall";
 
 const CameraMap = dynamic(() => import("@/components/CameraMap"), { ssr: false });
 
@@ -24,6 +25,7 @@ export default function Home() {
   const [category, setCategory] = useState("all");
   const [county, setCounty] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [wallOpen, setWallOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/cameras").then((r) => r.json()).then((data) => {
@@ -49,6 +51,7 @@ export default function Home() {
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
+        <button className="wall-launch" onClick={() => { setSelected(null); setWallOpen(true); }} disabled={!filtered.length}><Grid3X3 size={16}/> 9-cam view</button>
         <a className="about-link" href="/sources">Source decisions</a>
       </header>
 
@@ -94,6 +97,9 @@ export default function Home() {
           {selected && <CameraPanel key={selected.id} camera={selected} onClose={() => setSelected(null)} onPrevious={() => selectRelative(-1)} onNext={() => selectRelative(1)} position={selectedIndex + 1} total={filtered.length}/>}
         </div>
       </section>
+      {wallOpen && (
+        <VideoWall key={`${query}-${state}-${county}-${category}`} cameras={filtered} onClose={() => setWallOpen(false)} onSelect={(camera) => { setWallOpen(false); setSelected(camera); }}/>
+      )}
     </main>
   );
 }

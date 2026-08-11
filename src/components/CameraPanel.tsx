@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin, Maximize2, Minimize2, 
 import Hls from "hls.js";
 import type { CameraRecord } from "@/lib/camera";
 
-function Player({ camera }: { camera: CameraRecord }) {
+export function Player({ camera }: { camera: CameraRecord }) {
   const video = useRef<HTMLVideoElement>(null);
   const [stamp, setStamp] = useState(0);
   useEffect(() => {
