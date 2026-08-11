@@ -12,7 +12,7 @@ export default function Home() {
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [selected, setSelected] = useState<CameraRecord | null>(null);
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
+  const [state, setState] = useState("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,15 +24,15 @@ export default function Home() {
 
   const filtered = useMemo(() => cameras.filter((camera) => {
     const haystack = `${camera.title} ${camera.operator} ${camera.region}`.toLowerCase();
-    return haystack.includes(query.toLowerCase()) && (status === "all" || camera.status === status);
-  }), [cameras, query, status]);
+    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state);
+  }), [cameras, query, state]);
 
   return (
     <main className="app-shell">
       <header className="topbar">
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Official feeds only</div>
-        <a className="about-link" href="https://dot.ca.gov/" target="_blank" rel="noreferrer">Data policy</a>
+        <a className="about-link" href="https://www.txdot.gov/discover/live-traffic-cameras.html" target="_blank" rel="noreferrer">Source policy</a>
       </header>
 
       <section className="workspace">
@@ -44,16 +44,18 @@ export default function Home() {
           </div>
           <label className="search-box"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a road, city, or county"/>{query && <button onClick={() => setQuery("")} aria-label="Clear"><X size={15}/></button>}</label>
           <div className="filter-row">
-            <span><SlidersHorizontal size={14}/> Status</span>
-            {(["all", "online", "unknown"] as const).map((item) => <button key={item} className={status === item ? "active" : ""} onClick={() => setStatus(item)}>{item}</button>)}
+            <span><SlidersHorizontal size={14}/> Region</span>
+            {(["all", "California", "Texas"] as const).map((item) => <button key={item} className={state === item ? "active" : ""} onClick={() => { setState(item); setSelected(null); }}>{item}</button>)}
           </div>
-          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> cameras <span>California · Caltrans</span></div>
+          <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
             {loading ? Array.from({length: 6}).map((_, i) => <div className="skeleton" key={i}/>) : filtered.slice(0, 80).map((camera) => (
               <button className={`camera-card ${selected?.id === camera.id ? "selected" : ""}`} key={camera.id} onClick={() => setSelected(camera)}>
-                {/* Camera snapshots are live proxy URLs, so Next image optimization is intentionally bypassed. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/image?url=${encodeURIComponent(camera.previewUrl || camera.streamUrl)}`} alt=""/>
+                {camera.previewUrl ? <>
+                  {/* Camera snapshots are live proxy URLs. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}`} alt=""/>
+                </> : <span className="video-preview"><Camera size={18}/><small>Live HLS</small></span>}
                 <span className="card-copy"><strong>{camera.title}</strong><small>{camera.region} · {camera.streamType.replace("_", " ")}</small></span>
                 <span className={`status-dot ${camera.status}`}/>
               </button>

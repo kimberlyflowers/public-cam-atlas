@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { caltransAdapter } from "@/lib/adapters/caltrans";
+import { driveTexasAdapter } from "@/lib/adapters/drivetexas";
 
 export const revalidate = 300;
 export async function GET() {
   try {
-    const cameras = await caltransAdapter.fetch();
-    return NextResponse.json({ cameras, source: caltransAdapter.id, generatedAt: new Date().toISOString() });
+    const adapters = [caltransAdapter, driveTexasAdapter];
+    const results = await Promise.allSettled(adapters.map((adapter) => adapter.fetch()));
+    const cameras = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+    const sources = adapters.map((adapter, index) => ({
+      id: adapter.id,
+      count: results[index].status === "fulfilled" ? results[index].value.length : 0,
+      error: results[index].status === "rejected" ? String(results[index].reason) : null,
+    }));
+    if (!cameras.length) throw new Error("All official camera sources are unavailable");
+    return NextResponse.json({ cameras, sources, generatedAt: new Date().toISOString() });
   } catch (error) {
     return NextResponse.json({ cameras: [], error: error instanceof Error ? error.message : "Source unavailable" }, { status: 502 });
   }
