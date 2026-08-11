@@ -43,14 +43,14 @@ export const driveTexasAdapter: CameraAdapter = {
         streamType: "hls",
         lat: point.lat,
         lng: point.lng,
-        operator: "TxDOT / DriveTexas",
+        operator: jurisdiction === "San Antonio" ? "TxDOT San Antonio TransGuide / DriveTexas" : "TxDOT / DriveTexas",
         sourcePage: SOURCE_PAGE,
         status: "unknown",
         lastChecked: null,
         region: jurisdiction,
         state: "Texas",
         category: "traffic",
-        publicationEvidence: "Published on the official DriveTexas traveler map",
+        publicationEvidence: jurisdiction === "San Antonio" ? "San Antonio TransGuide camera published on TxDOT's official DriveTexas traveler map" : "Published on the official DriveTexas traveler map",
       });
     }
     return cameras;
