@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Camera, Grid3X3, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { Camera, Grid3X3, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import type { CameraRecord } from "@/lib/camera";
 import CameraPanel from "@/components/CameraPanel";
 import VideoWall from "@/components/VideoWall";
@@ -31,7 +31,9 @@ export default function Home() {
 
   useEffect(() => {
     fetch("/api/cameras").then((r) => r.json()).then((data) => {
-      setCameras(data.cameras ?? []);
+      let connected: CameraRecord[] = [];
+      try { connected = JSON.parse(localStorage.getItem("public-cam-atlas-dashcams") || "[]"); } catch { connected = []; }
+      setCameras([...(data.cameras ?? []), ...connected]);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -56,6 +58,7 @@ export default function Home() {
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
         <button className="wall-launch" onClick={() => { setSelected(null); setWallOpen(true); }} disabled={!filtered.length}><Grid3X3 size={16}/> 9-cam view</button>
+        <a className="connect-link" href="/connect-dashcam"><Plus size={15}/> Connect dashcam</a>
         <a className="about-link" href="/sources">Source decisions</a>
       </header>
 
@@ -70,7 +73,7 @@ export default function Home() {
           <div className="filter-grid">
             <label><span><SlidersHorizontal size={13}/> Region</span><select value={state} onChange={(event) => { const value = event.target.value; setState(value); if (value !== "Texas") setArea("all"); setSelected(null); }}><option value="all">All regions</option>{states.map((item) => <option value={item} key={item}>{item}</option>)}</select></label>
             <label><span><MapPin size={13}/> Area</span><select value={area} onChange={(event) => { const value = event.target.value; setArea(value); if (value !== "all") setState("Texas"); setSelected(null); }}><option value="all">All areas</option><option value="San Antonio Metro">San Antonio Metro</option><option value="San Antonio TransGuide">San Antonio TransGuide</option><option value="Bexar County">Bexar County</option></select></label>
-            <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="public_places">Public places</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
+            <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="dashcam">Live dashcam</option><option value="public_places">Public places</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "United States" : state}</span></div>
           <div className="camera-list">

@@ -60,12 +60,12 @@ export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; sta
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {
   const panel = useRef<HTMLElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
-  const embedded = camera.streamType === "youtube" || camera.streamType === "embed";
+  const embedded = camera.streamType === "youtube" || camera.streamType === "embed" || camera.category === "dashcam";
   const [health, setHealth] = useState<{status: string; checkedAt?: string}>({ status: embedded ? "online" : "checking" });
   useEffect(() => {
-    if (camera.streamType === "youtube" || camera.streamType === "embed") return;
+    if (camera.streamType === "youtube" || camera.streamType === "embed" || camera.category === "dashcam") return;
     fetch(`/api/status?url=${encodeURIComponent(camera.streamUrl)}`).then(r => r.json()).then(setHealth).catch(() => setHealth({status:"unknown"}));
-  }, [camera.streamUrl, camera.streamType]);
+  }, [camera.streamUrl, camera.streamType, camera.category]);
   useEffect(() => {
     const onFullscreen = () => setFullscreen(document.fullscreenElement === panel.current);
     const onKey = (event: KeyboardEvent) => {
