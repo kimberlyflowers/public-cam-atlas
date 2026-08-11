@@ -8,6 +8,14 @@ import CameraPanel from "@/components/CameraPanel";
 
 const CameraMap = dynamic(() => import("@/components/CameraMap"), { ssr: false });
 
+function spatialKey(camera: CameraRecord) {
+  const x = Math.max(0, Math.min(65535, Math.round(((camera.lng + 180) / 360) * 65535)));
+  const y = Math.max(0, Math.min(65535, Math.round(((camera.lat + 90) / 180) * 65535)));
+  let key = 0;
+  for (let bit = 0; bit < 16; bit++) key += ((x >> bit) & 1) * 2 ** (bit * 2) + ((y >> bit) & 1) * 2 ** (bit * 2 + 1);
+  return key;
+}
+
 export default function Home() {
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [selected, setSelected] = useState<CameraRecord | null>(null);
@@ -26,7 +34,7 @@ export default function Home() {
   const filtered = useMemo(() => cameras.filter((camera) => {
     const haystack = `${camera.title} ${camera.operator} ${camera.region}`.toLowerCase();
     return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (category === "all" || (camera.category || "traffic") === category);
-  }), [cameras, query, state, category]);
+  }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, category]);
 
   const selectedIndex = selected ? filtered.findIndex((camera) => camera.id === selected.id) : -1;
   const selectRelative = (offset: number) => {
