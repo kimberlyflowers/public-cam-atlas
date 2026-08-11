@@ -28,6 +28,13 @@ export default function Home() {
     return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && (category === "all" || (camera.category || "traffic") === category);
   }), [cameras, query, state, category]);
 
+  const selectedIndex = selected ? filtered.findIndex((camera) => camera.id === selected.id) : -1;
+  const selectRelative = (offset: number) => {
+    if (!filtered.length) return;
+    const current = selectedIndex >= 0 ? selectedIndex : 0;
+    setSelected(filtered[(current + offset + filtered.length) % filtered.length]);
+  };
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -71,7 +78,7 @@ export default function Home() {
         <div className="map-stage">
           <CameraMap cameras={filtered} selected={selected} onSelect={setSelected}/>
           <div className="map-key"><span><i className="online"/> Available</span><span><i/> Not checked</span></div>
-          {selected && <CameraPanel key={selected.id} camera={selected} onClose={() => setSelected(null)}/>} 
+          {selected && <CameraPanel key={selected.id} camera={selected} onClose={() => setSelected(null)} onPrevious={() => selectRelative(-1)} onNext={() => selectRelative(1)} position={selectedIndex + 1} total={filtered.length}/>}
         </div>
       </section>
     </main>
