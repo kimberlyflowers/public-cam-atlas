@@ -15,6 +15,7 @@ export interface CameraRecord {
   status: CameraStatus;
   lastChecked: string | null;
   region: string;
+  state: "California" | "Texas";
   refreshSeconds?: number;
 }
 

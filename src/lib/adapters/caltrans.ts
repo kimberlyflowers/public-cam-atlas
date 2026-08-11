@@ -37,6 +37,7 @@ export const caltransAdapter: CameraAdapter = {
         status: "unknown",
         lastChecked: a.recordDate ? new Date(Number(a.recordDate)).toISOString() : null,
         region: [a.nearbyPlace, a.county ? `${a.county} County` : null].filter(Boolean).join(", "),
+        state: "California",
         refreshSeconds: Number(a.currentImageUpdateFrequency) || 30,
       };
     });
