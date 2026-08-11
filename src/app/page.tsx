@@ -58,7 +58,7 @@ export default function Home() {
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
         <button className="wall-launch" onClick={() => { setSelected(null); setWallOpen(true); }} disabled={!filtered.length}><Grid3X3 size={16}/> 9-cam view</button>
-        <a className="connect-link" href="/connect-dashcam"><Plus size={15}/> Connect dashcam</a>
+        <a className="connect-link" href="/connect-dashcam"><Plus size={15}/> Add cam</a>
         <a className="about-link" href="/sources">Source decisions</a>
       </header>
 

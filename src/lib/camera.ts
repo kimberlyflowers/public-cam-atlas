@@ -7,6 +7,8 @@ export interface CameraRecord {
   title: string;
   sourceUrl: string;
   streamUrl: string;
+  dashUrl?: string;
+  drmCameraId?: number;
   previewUrl?: string;
   streamType: StreamType;
   lat: number;

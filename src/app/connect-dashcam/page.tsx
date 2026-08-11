@@ -10,7 +10,6 @@ const STORAGE_KEY = "public-cam-atlas-dashcams";
 function readConnected(): CameraRecord[] {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
 }
-
 function streamKind(raw: string) {
   const url = new URL(raw);
   if (url.protocol !== "https:" || url.username || url.password) throw new Error("Use a public HTTPS source without credentials in the URL.");

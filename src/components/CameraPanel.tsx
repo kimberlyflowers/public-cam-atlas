@@ -4,7 +4,59 @@ import { ChevronLeft, ChevronRight, ExternalLink, MapPin, Maximize2, Minimize2, 
 import Hls from "hls.js";
 import type { CameraRecord } from "@/lib/camera";
 
-export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; startDelayMs?: number }) {
+function AlgoPlayer({ camera }: { camera: CameraRecord }) {
+  const container = useRef<HTMLDivElement>(null);
+  const [playback, setPlayback] = useState<"connecting" | "playing" | "unavailable">("connecting");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!container.current || !camera.dashUrl || !camera.drmCameraId) return;
+    const host = container.current;
+    const videoElement = document.createElement("video-js");
+    videoElement.classList.add("vjs-big-play-centered");
+    host.appendChild(videoElement);
+    let player: { dispose: () => void } | undefined;
+    let cancelled = false;
+    const start = async () => {
+      try {
+        const robustnessLevels = ["HW_SECURE_ALL", "HW_SECURE_DECODE", "SW_SECURE_DECODE", "SW_SECURE_CRYPTO"];
+        let videoRobustness: string | undefined;
+        for (const robustness of robustnessLevels) {
+          try {
+            await navigator.requestMediaKeySystemAccess("com.widevine.alpha", [{ initDataTypes: ["cenc"], videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.42E01E"', robustness }, { contentType: 'video/webm; codecs="vp9"', robustness }] }]);
+            videoRobustness = robustness;
+            break;
+          } catch { /* Try the next supported Widevine robustness level. */ }
+        }
+        if (!videoRobustness) throw new Error("Widevine is unavailable in this browser");
+        const [videoJsModule] = await Promise.all([import("video.js"), import("videojs-contrib-eme")]);
+        if (cancelled) return;
+        const videojs = videoJsModule.default;
+        const instance = videojs(videoElement, { autoplay: true, muted: true, controls: true, fill: true, poster: camera.previewUrl });
+        player = instance;
+        (instance as typeof instance & { eme: () => void }).eme();
+        let userId = localStorage.getItem("algo-drm-user-id");
+        if (!userId) { userId = crypto.randomUUID(); localStorage.setItem("algo-drm-user-id", userId); }
+        const licenseUrl = `https://widevine-dash.ezdrm.com/proxy?pX=E78674&user_id=${encodeURIComponent(userId)}&cameraId=${camera.drmCameraId}&application=trafficweb`;
+        instance.src({ src: camera.dashUrl, type: "application/dash+xml", keySystems: { "com.widevine.alpha": { videoRobustness, getLicense: (_options: unknown, message: ArrayBuffer, callback: (error: Error | null, license?: ArrayBuffer) => void) => { fetch(licenseUrl, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: message }).then(async (response) => { if (!response.ok) throw new Error(`DRM license returned ${response.status}`); const license = await response.arrayBuffer(); if (!license.byteLength) throw new Error("Empty DRM license response"); callback(null, license); }).catch((error: Error) => callback(error)); } } } } as never);
+        instance.on("playing", () => setPlayback("playing"));
+        instance.on("error", () => setPlayback("unavailable"));
+        await instance.play()?.catch(() => undefined);
+      } catch { setPlayback("unavailable"); }
+    };
+    void start();
+    return () => { cancelled = true; player?.dispose(); if (videoElement.isConnected) videoElement.remove(); };
+  }, [camera, attempt]);
+  /* Live snapshot proxy is intentionally rendered without image optimization. */
+  /* eslint-disable @next/next/no-img-element */
+  return <div className="player-frame algo-player">
+    <div ref={container} className="player"/>
+    {playback === "unavailable" && camera.previewUrl && <img className="player algo-fallback" src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}&t=${attempt}`} alt={`Latest view from ${camera.title}`}/>}
+    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Opening licensed ALDOT live video…" : "Live video unavailable in this browser — showing latest image"}</span>{playback === "unavailable" && <button onClick={() => { setPlayback("connecting"); setAttempt((value) => value + 1); }}>Retry live video</button>}</div>}
+  </div>;
+}
+/* eslint-enable @next/next/no-img-element */
+
+function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; startDelayMs?: number }) {
   const video = useRef<HTMLVideoElement>(null);
   const [stamp, setStamp] = useState(0);
   const [playback, setPlayback] = useState<"connecting" | "playing" | "retrying" | "unavailable">("connecting");
@@ -35,7 +87,7 @@ export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; sta
           hls?.destroy();
         });
       }, startDelayMs);
-      return () => { clearTimeout(startTimer); if (retryTimer) clearTimeout(retryTimer); hls?.destroy(); element.removeAttribute("src"); element.load(); };
+      return () => { clearTimeout(startTimer); if (retryTimer) clearTimeout(retryTimer); hls?.destroy(); if (element.isConnected) { element.removeAttribute("src"); element.load(); } };
     }
   }, [camera, attempt, startDelayMs]);
   if (camera.streamType === "embed") return <iframe className="player" src={camera.streamUrl} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
@@ -55,6 +107,11 @@ export function Player({ camera, startDelayMs = 0 }: { camera: CameraRecord; sta
     <video className="player" ref={video} autoPlay muted controls playsInline style={playback === "unavailable" && camera.previewUrl ? { display: "none" } : undefined} onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
     {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Connecting…" : playback === "retrying" ? "Reconnecting…" : camera.previewUrl ? "Live video paused — showing latest official image" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
   </div>;
+}
+
+export function Player(props: { camera: CameraRecord; startDelayMs?: number }) {
+  if (props.camera.dashUrl && props.camera.drmCameraId) return <AlgoPlayer camera={props.camera}/>;
+  return <StandardPlayer {...props}/>;
 }
 
 export default function CameraPanel({ camera, onClose, onPrevious, onNext, position, total }: { camera: CameraRecord; onClose: () => void; onPrevious: () => void; onNext: () => void; position: number; total: number }) {
