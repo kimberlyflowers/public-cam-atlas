@@ -6,7 +6,7 @@ test("every listed live dashcam advances actual video", async ({ page }) => {
   await page.goto(site);
   await page.getByLabel("Type").selectOption("dashcam");
   const cards = page.locator(".camera-card");
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(4);
   for (let index = 0; index < await cards.count(); index += 1) {
     await cards.nth(index).click();
     const player = page.locator('iframe[title^="Live view from"]');

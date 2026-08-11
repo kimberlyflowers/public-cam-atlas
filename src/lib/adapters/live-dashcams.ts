@@ -5,12 +5,14 @@ const candidates = [
   { id: "wDaV8EkYHmk", title: "London bus road-view livestream", operator: "kidney beans global", region: "London", state: "International", lat: 51.5072, lng: -0.1276 },
   { id: "DaHHb4OfZpw", title: "NYC taxi street dashcam", operator: "Sounds Of The City", region: "New York City", state: "New York", lat: 40.7128, lng: -74.006 },
   { id: "ZVGTmF6Nnis", title: "Live driving POV — Amarillo to Los Lunas", operator: "Ride Along Gang", region: "Amarillo to Los Lunas", state: "Texas", lat: 35.222, lng: -101.8313 },
+  { id: "HpgnXXHsmfE", title: "Live tram driver cab view", operator: "TramMeneer", region: "Netherlands", state: "International", lat: 52.1326, lng: 5.2913 },
+  { id: "OvaASV76TyQ", title: "Live vehicle view — Swiss mountain roads", operator: "ULDORA-MC", region: "Switzerland", state: "International", lat: 46.8182, lng: 8.2275 },
 ] as const;
 
 // YouTube blocks or rate-limits watch-page checks from some serverless regions.
 // This feed was manually verified live and embeddable on 2026-08-11, so retain it
 // when the check is inconclusive. Explicitly offline candidates are still omitted.
-const verifiedLiveFallbacks = new Set(["wDaV8EkYHmk", "ZVGTmF6Nnis"]);
+const verifiedLiveFallbacks = new Set(["wDaV8EkYHmk", "ZVGTmF6Nnis", "HpgnXXHsmfE", "OvaASV76TyQ"]);
 
 async function isLive(videoId: string) {
   try {
