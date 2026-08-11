@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
     if (url.protocol !== "https:" || !isAllowed(url)) return NextResponse.json({ status: "blocked" }, { status: 403 });
     const started = Date.now();
     let response = await fetch(url, { method: "HEAD", cache: "no-store", signal: AbortSignal.timeout(6000) });
-    if (response.status === 405) {
+    // Several public HLS CDNs reject or inconsistently route HEAD even while
+    // the playlist GET is healthy. Confirm any failed HEAD with the same small
+    // GET the browser player uses before marking a feed offline.
+    if (!response.ok) {
       response = await fetch(url, { headers: { Range: "bytes=0-1023" }, cache: "no-store", signal: AbortSignal.timeout(6000) });
       await response.body?.cancel();
     }
