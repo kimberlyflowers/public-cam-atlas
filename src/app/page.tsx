@@ -37,7 +37,8 @@ export default function Home() {
   const filtered = useMemo(() => cameras.filter((camera) => {
     const haystack = `${camera.title} ${camera.operator} ${camera.region} ${camera.county || ""}`.toLowerCase();
     const inArea = area === "all" || (area === "San Antonio Metro" ? camera.region === "San Antonio" || camera.county === "Bexar County" : area === "San Antonio TransGuide" ? camera.region === "San Antonio" && (camera.operator.includes("TransGuide") || camera.id === "texas-ksat-transguide") : camera.county === area);
-    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && inArea && (category === "all" || (camera.category || "traffic") === category);
+    const matchesCategory = category === "all" || (category === "public_places" ? !["traffic", "intersection"].includes(camera.category || "traffic") : (camera.category || "traffic") === category);
+    return haystack.includes(query.toLowerCase()) && (state === "all" || camera.state === state) && inArea && matchesCategory;
   }).sort((a, b) => spatialKey(a) - spatialKey(b)), [cameras, query, state, area, category]);
 
   const selectedIndex = selected ? filtered.findIndex((camera) => camera.id === selected.id) : -1;
@@ -67,7 +68,7 @@ export default function Home() {
           <div className="filter-grid">
             <label><span><SlidersHorizontal size={13}/> Region</span><select value={state} onChange={(event) => { const value = event.target.value; setState(value); if (value === "California") setArea("all"); setSelected(null); }}><option value="all">All regions</option><option value="Texas">Texas</option><option value="California">California</option></select></label>
             <label><span><MapPin size={13}/> Area</span><select value={area} onChange={(event) => { const value = event.target.value; setArea(value); if (value !== "all") setState("Texas"); setSelected(null); }}><option value="all">All areas</option><option value="San Antonio Metro">San Antonio Metro</option><option value="San Antonio TransGuide">San Antonio TransGuide</option><option value="Bexar County">Bexar County</option></select></label>
-            <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
+            <label><span><Camera size={13}/> Type</span><select value={category} onChange={(event) => { setCategory(event.target.value); setSelected(null); }}><option value="all">All camera types</option><option value="public_places">Public places</option><option value="traffic">Traffic</option><option value="intersection">Intersection</option><option value="landmark">Landmark</option><option value="wildlife">Wildlife</option><option value="airport">Airport</option><option value="tourism">Tourism</option><option value="water">Water</option></select></label>
           </div>
           <div className="result-meta"><strong>{loading ? "—" : filtered.length}</strong> live cameras <span>{area !== "all" ? area : state === "all" ? "CA + TX" : state}</span></div>
           <div className="camera-list">
