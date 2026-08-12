@@ -71,23 +71,53 @@ function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; st
       let hls: Hls | undefined;
       let retries = 0;
       let retryTimer: ReturnType<typeof setTimeout> | undefined;
+      let stopped = false;
+      let nativeErrorHandler: (() => void) | undefined;
       const startTimer = setTimeout(() => {
         setPlayback("connecting");
-        if (element.canPlayType("application/vnd.apple.mpegurl")) { element.src = camera.streamUrl; element.play().catch(() => undefined); return; }
+        if (element.canPlayType("application/vnd.apple.mpegurl")) {
+          const reconnectNative = () => {
+            if (stopped) return;
+            setPlayback(retries ? "retrying" : "connecting");
+            element.src = camera.streamUrl;
+            element.load();
+            element.play().catch(() => undefined);
+          };
+          nativeErrorHandler = () => {
+            if (retries >= 5) { setPlayback("unavailable"); return; }
+            retries += 1;
+            retryTimer = setTimeout(reconnectNative, Math.min(8000, retries * 1500));
+          };
+          element.addEventListener("error", nativeErrorHandler);
+          reconnectNative();
+          return;
+        }
         if (!Hls.isSupported()) { setPlayback("unavailable"); return; }
-        hls = new Hls({ lowLatencyMode: false, maxBufferLength: 12, backBufferLength: 0, liveSyncDurationCount: 2, liveMaxLatencyDurationCount: 5, manifestLoadingTimeOut: 8000, levelLoadingTimeOut: 8000, fragLoadingTimeOut: 10000 });
-        hls.loadSource(camera.streamUrl);
-        hls.attachMedia(element);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => element.play().catch(() => undefined));
-        hls.on(Hls.Events.ERROR, (_event, data) => {
-          if (!data.fatal) return;
-          if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { setPlayback("retrying"); hls?.recoverMediaError(); return; }
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retries < 2) { retries += 1; setPlayback("retrying"); retryTimer = setTimeout(() => hls?.startLoad(), retries * 1500); return; }
-          setPlayback("unavailable");
+        const connect = () => {
+          if (stopped) return;
           hls?.destroy();
-        });
+          setPlayback(retries ? "retrying" : "connecting");
+          hls = new Hls({ lowLatencyMode: false, maxBufferLength: 12, backBufferLength: 0, liveSyncDurationCount: 2, liveMaxLatencyDurationCount: 5, manifestLoadingTimeOut: 15000, levelLoadingTimeOut: 15000, fragLoadingTimeOut: 15000 });
+          hls.loadSource(camera.streamUrl);
+          hls.attachMedia(element);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => element.play().catch(() => undefined));
+          hls.on(Hls.Events.ERROR, (_event, data) => {
+            if (!data.fatal) return;
+            if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { setPlayback("retrying"); hls?.recoverMediaError(); return; }
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retries < 5) {
+              retries += 1;
+              setPlayback("retrying");
+              hls?.destroy();
+              retryTimer = setTimeout(connect, Math.min(8000, retries * 1500));
+              return;
+            }
+            setPlayback("unavailable");
+            hls?.destroy();
+          });
+        };
+        connect();
       }, startDelayMs);
-      return () => { clearTimeout(startTimer); if (retryTimer) clearTimeout(retryTimer); hls?.destroy(); if (element.isConnected) { element.removeAttribute("src"); element.load(); } };
+      return () => { stopped = true; clearTimeout(startTimer); if (retryTimer) clearTimeout(retryTimer); if (nativeErrorHandler) element.removeEventListener("error", nativeErrorHandler); hls?.destroy(); if (element.isConnected) { element.removeAttribute("src"); element.load(); } };
     }
   }, [camera, attempt, startDelayMs]);
   if (camera.streamType === "embed") return <iframe className="player" src={camera.streamUrl} title={`Live view from ${camera.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen/>;
