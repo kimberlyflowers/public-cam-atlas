@@ -98,7 +98,7 @@ export default function Home() {
         </div>
       </section>
       {wallOpen && (
-        <VideoWall key={`${query}-${state}-${area}-${category}`} cameras={filtered} onClose={() => setWallOpen(false)} onSelect={(camera) => { setWallOpen(false); setSelected(camera); }}/>
+        <VideoWall key={`${query}-${state}-${area}-${category}`} cameras={filtered} onClose={() => setWallOpen(false)}/>
       )}
     </main>
   );

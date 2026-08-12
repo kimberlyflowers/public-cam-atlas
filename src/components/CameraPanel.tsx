@@ -84,9 +84,9 @@ function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; st
             element.play().catch(() => undefined);
           };
           nativeErrorHandler = () => {
-            if (retries >= 5) { setPlayback("unavailable"); return; }
+            if (retries >= 2) { setPlayback("unavailable"); return; }
             retries += 1;
-            retryTimer = setTimeout(reconnectNative, Math.min(8000, retries * 1500));
+            retryTimer = setTimeout(reconnectNative, retries * 800);
           };
           element.addEventListener("error", nativeErrorHandler);
           reconnectNative();
@@ -97,18 +97,18 @@ function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; st
           if (stopped) return;
           hls?.destroy();
           setPlayback(retries ? "retrying" : "connecting");
-          hls = new Hls({ lowLatencyMode: false, maxBufferLength: 12, backBufferLength: 0, liveSyncDurationCount: 2, liveMaxLatencyDurationCount: 5, manifestLoadingTimeOut: 15000, levelLoadingTimeOut: 15000, fragLoadingTimeOut: 15000 });
+          hls = new Hls({ lowLatencyMode: false, maxBufferLength: 12, backBufferLength: 0, liveSyncDurationCount: 2, liveMaxLatencyDurationCount: 5, manifestLoadingTimeOut: 6000, levelLoadingTimeOut: 6000, fragLoadingTimeOut: 8000 });
           hls.loadSource(camera.streamUrl);
           hls.attachMedia(element);
           hls.on(Hls.Events.MANIFEST_PARSED, () => element.play().catch(() => undefined));
           hls.on(Hls.Events.ERROR, (_event, data) => {
             if (!data.fatal) return;
             if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { setPlayback("retrying"); hls?.recoverMediaError(); return; }
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retries < 5) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retries < 2) {
               retries += 1;
               setPlayback("retrying");
               hls?.destroy();
-              retryTimer = setTimeout(connect, Math.min(8000, retries * 1500));
+              retryTimer = setTimeout(connect, retries * 800);
               return;
             }
             setPlayback("unavailable");
