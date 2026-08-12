@@ -59,7 +59,7 @@ export default function VideoWall({ cameras, onClose }: { cameras: CameraRecord[
     </header>
     <div className="wall-grid" ref={grid} onScroll={onGridScroll}>
       {visible.map((camera, index) => <article className="wall-tile" key={camera.id}>
-        <Player camera={camera} startDelayMs={index < WALL_SIZE ? index * 80 : 0}/>
+        <Player camera={camera} startDelayMs={index < WALL_SIZE ? index * 80 : 0} showPreview={false}/>
         <button className="wall-label" onClick={() => setFocused(camera)}><strong>{camera.title}</strong><span>{camera.region}{camera.county ? ` · ${camera.county}` : ""}</span></button>
       </article>)}
       {visible.length < matching.length && <div className="wall-loading">Scroll for more cameras</div>}

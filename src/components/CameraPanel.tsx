@@ -56,8 +56,9 @@ function AlgoPlayer({ camera }: { camera: CameraRecord }) {
 }
 /* eslint-enable @next/next/no-img-element */
 
-function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; startDelayMs?: number }) {
+function StandardPlayer({ camera, startDelayMs = 0, showPreview = true }: { camera: CameraRecord; startDelayMs?: number; showPreview?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
+  const [hasPlayed, setHasPlayed] = useState(false);
   const [stamp, setStamp] = useState(0);
   const [playback, setPlayback] = useState<"connecting" | "playing" | "retrying" | "unavailable">("connecting");
   const [attempt, setAttempt] = useState(0);
@@ -132,14 +133,15 @@ function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; st
   </>;
   /* Live proxy URL is intentionally rendered without Next image optimization. */
   /* eslint-disable @next/next/no-img-element */
-  return <div className={`player-frame ${camera.previewUrl ? "has-preview" : ""}`}>
-    {camera.previewUrl && <img className="player player-preview" src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}&t=${stamp}`} alt={`Latest view from ${camera.title}`}/>}
-    <video className="player player-video" ref={video} autoPlay muted controls playsInline style={playback === "playing" || !camera.previewUrl ? undefined : { opacity: 0 }} onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
-    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? camera.previewUrl ? "Opening live video — showing current official image" : "Connecting…" : playback === "retrying" ? camera.previewUrl ? "Reconnecting video — current image remains live" : "Reconnecting…" : camera.previewUrl ? "Video is currently unavailable — showing current official image" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
+  const previewUrl = showPreview ? camera.previewUrl : undefined;
+  return <div className={`player-frame ${previewUrl ? "has-preview" : ""}`}>
+    {previewUrl && <img className="player player-preview" src={`/api/image?url=${encodeURIComponent(previewUrl)}&t=${stamp}`} alt={`Latest view from ${camera.title}`}/>}
+    <video className="player player-video" ref={video} autoPlay muted controls playsInline style={playback === "playing" || hasPlayed || !previewUrl ? undefined : { opacity: 0 }} onPlaying={() => { setHasPlayed(true); setPlayback("playing"); }} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
+    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? previewUrl ? "Opening live video — showing current official image" : "Connecting to live video…" : playback === "retrying" ? previewUrl ? "Reconnecting video — current image remains live" : "Live video buffering…" : previewUrl ? "Video is currently unavailable — showing current official image" : "Live feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
   </div>;
 }
 
-export function Player(props: { camera: CameraRecord; startDelayMs?: number }) {
+export function Player(props: { camera: CameraRecord; startDelayMs?: number; showPreview?: boolean }) {
   if (props.camera.dashUrl && props.camera.drmCameraId) return <AlgoPlayer camera={props.camera}/>;
   return <StandardPlayer {...props}/>;
 }
