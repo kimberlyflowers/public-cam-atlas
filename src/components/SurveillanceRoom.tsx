@@ -30,13 +30,13 @@ function LiveScreen({ camera, position }: { camera: CameraRecord; position: [num
 }
 
 function Exterior({ type }: { type: string }) {
-  const loadedCoastalRoom = useTexture("/images/coastal-surveillance-room.png");
+  const loadedCoastalRoom = useTexture("/images/coastal-cliffs-360.png");
   const coastalRoom = useMemo(() => { const texture = loadedCoastalRoom.clone(); texture.colorSpace = THREE.SRGBColorSpace; return texture; }, [loadedCoastalRoom]);
   const colors: Record<string, [string, string, string]> = {
     "cliff-beach": ["#73b8d2", "#167b8e", "#7d684b"], sunset: ["#e99868", "#695a83", "#352c58"], city: ["#10182c", "#10162a", "#21283b"], mountains: ["#a9d2df", "#416f83", "#4e625a"]
   };
   const [sky, water, land] = colors[type] || colors["cliff-beach"];
-  if (type === "cliff-beach") return <mesh position={[0, 1.35, -2]}><planeGeometry args={[14, 7.88]}/><meshBasicMaterial map={coastalRoom} toneMapped={false}/></mesh>;
+  if (type === "cliff-beach") return <mesh rotation={[0, Math.PI * .58, 0]}><sphereGeometry args={[42, 64, 32]}/><meshBasicMaterial map={coastalRoom} side={THREE.BackSide} toneMapped={false}/></mesh>;
   return <group position={[0, 1, -10]}>
     <mesh position={[0, 3, -2]}><planeGeometry args={[28, 12]}/><meshBasicMaterial color={sky}/></mesh>
     <mesh position={[0, -.5, -1.8]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[28, 15]}/><meshStandardMaterial color={water} metalness={.35} roughness={.22}/></mesh>
@@ -46,7 +46,20 @@ function Exterior({ type }: { type: string }) {
   </group>;
 }
 
-const xrStore = createXRStore({ bounded: false, hand: true, controller: true });
+const xrStore = createXRStore({
+  customSessionInit: { requiredFeatures: ["local-floor"] },
+  offerSession: false,
+  enterGrantedSession: false,
+  emulate: false,
+  hand: true,
+  controller: true,
+  anchors: false,
+  layers: false,
+  meshDetection: false,
+  planeDetection: false,
+  hitTest: false,
+  domOverlay: false,
+});
 
 function XRBridge() {
   useEffect(() => {
@@ -68,8 +81,12 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
     <mesh position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#111a17"/></mesh>
     <mesh position={[0, 1.3, -4.9]}><boxGeometry args={[12.4, 7.2, .25]}/><meshStandardMaterial color="#101b18" metalness={.3}/></mesh>
     {cameras.map((camera, index) => <LiveScreen key={camera.id} camera={camera} position={positions[index]}/>) }
-    <group rotation={[0, -Math.PI / 2, 0]}><Exterior type={exterior}/></group>
+    <Exterior type={exterior}/>
     <mesh position={[5.02, 1.25, 0]} rotation={[0, -Math.PI / 2, 0]}><boxGeometry args={[11.8, 6.4, .12]}/><meshPhysicalMaterial color="#9dddec" transmission={.72} transparent opacity={.18} roughness={.06}/></mesh>
+    {[-4.5, -1.5, 1.5, 4.5].map((z) => <mesh key={z} position={[4.94, 1.25, z]}><boxGeometry args={[.16, 6.5, .16]}/><meshStandardMaterial color="#111816" metalness={.8} roughness={.24}/></mesh>)}
+    <mesh position={[4.94, -1.95, 0]}><boxGeometry args={[.16, .18, 11.8]}/><meshStandardMaterial color="#111816" metalness={.8}/></mesh>
+    <mesh position={[4.94, 4.45, 0]}><boxGeometry args={[.16, .18, 11.8]}/><meshStandardMaterial color="#111816" metalness={.8}/></mesh>
+    <RoundedBox args={[4.8, .18, 1.35]} radius={.06} position={[0, -.65, 1.5]}><meshStandardMaterial color="#33251d" roughness={.45}/></RoundedBox>
     <OrbitControls target={[0, .8, -2]} minDistance={2.4} maxDistance={10} maxPolarAngle={Math.PI * .62}/>
   </>;
 }
