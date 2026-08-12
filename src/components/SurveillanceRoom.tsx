@@ -1,10 +1,10 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
-import { createXRStore, XR, XROrigin } from "@react-three/xr";
+import { createXRStore, useXR, XR, XROrigin } from "@react-three/xr";
 import Hls from "hls.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { CameraRecord } from "@/lib/camera";
 
@@ -71,6 +71,37 @@ function XRBridge() {
   return null;
 }
 
+/* Three.js locomotion is intentionally imperative inside the render loop. */
+/* eslint-disable react-hooks/immutability */
+function QuestLocomotion({ origin }: { origin: RefObject<THREE.Group | null> }) {
+  const inputSources = useXR((state) => state.inputSourceStates);
+  const { camera } = useThree();
+  const turnReady = useRef(true);
+  const forward = useMemo(() => new THREE.Vector3(), []);
+  const right = useMemo(() => new THREE.Vector3(), []);
+  useFrame((_, delta) => {
+    const player = origin.current;
+    if (!player) return;
+    const controllers = inputSources.filter((source) => source.type === "controller");
+    const left = controllers.find((source) => source.inputSource.handedness === "left");
+    const rightController = controllers.find((source) => source.inputSource.handedness === "right");
+    const moveStick = left?.gamepad["xr-standard-thumbstick"];
+    if (moveStick) {
+      forward.set(0, 0, -1).applyQuaternion(camera.quaternion); forward.y = 0; forward.normalize();
+      right.set(1, 0, 0).applyQuaternion(camera.quaternion); right.y = 0; right.normalize();
+      player.position.addScaledVector(forward, -(moveStick.yAxis || 0) * delta * 2.2);
+      player.position.addScaledVector(right, (moveStick.xAxis || 0) * delta * 2.2);
+      player.position.x = THREE.MathUtils.clamp(player.position.x, -4.2, 4.2);
+      player.position.z = THREE.MathUtils.clamp(player.position.z, -3.8, 4.2);
+    }
+    const turn = rightController?.gamepad["xr-standard-thumbstick"]?.xAxis || 0;
+    if (Math.abs(turn) < .35) turnReady.current = true;
+    if (turnReady.current && Math.abs(turn) > .72) { player.rotation.y -= Math.sign(turn) * Math.PI / 6; turnReady.current = false; }
+  });
+  return null;
+}
+/* eslint-enable react-hooks/immutability */
+
 function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string }) {
   const glow = useRef<THREE.PointLight>(null);
   useFrame(({ clock }) => { if (glow.current) glow.current.intensity = 18 + Math.sin(clock.elapsedTime * .5) * 2; });
@@ -99,5 +130,6 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
 }
 
 export default function SurveillanceRoom(props: { cameras: CameraRecord[]; exterior: string }) {
-  return <><XRBridge/><Canvas camera={{ position: [3.8, 1.3, 5.8], fov: 58 }} dpr={[1, 1.5]}><XR store={xrStore}><XROrigin position={[0, 0, 2.8]}/><Room {...props}/></XR></Canvas></>;
+  const origin = useRef<THREE.Group>(null);
+  return <><XRBridge/><Canvas camera={{ position: [3.8, 1.3, 5.8], fov: 58 }} dpr={[1, 1.5]}><XR store={xrStore}><XROrigin ref={origin} position={[0, 0, 2.8]}/><QuestLocomotion origin={origin}/><Room {...props}/><Text position={[0,-1.55,1.65]} rotation={[-Math.PI/2,0,0]} fontSize={.13} color="#d5c8ad" anchorX="center">LEFT STICK MOVE  ·  RIGHT STICK TURN</Text></XR></Canvas></>;
 }
