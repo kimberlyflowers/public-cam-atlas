@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Camera, Grid3X3, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { Box, Camera, Grid3X3, MapPin, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import type { CameraRecord } from "@/lib/camera";
 import CameraPanel from "@/components/CameraPanel";
 import VideoWall from "@/components/VideoWall";
@@ -58,6 +58,7 @@ export default function Home() {
         <div className="brand"><span className="brand-mark"><Camera size={18}/></span><span>Public Cam Atlas</span></div>
         <div className="source-pill"><span className="live-dot"/> Verified public feeds</div>
         <button className="wall-launch" onClick={() => { setSelected(null); setWallOpen(true); }} disabled={!filtered.length}><Grid3X3 size={16}/> 9-cam view</button>
+        <a className="room-link" href="/room"><Box size={15}/> 3D Room</a>
         <a className="connect-link" href="/connect-dashcam"><Plus size={15}/> Add cam</a>
         <a className="about-link" href="/sources">Source decisions</a>
       </header>
