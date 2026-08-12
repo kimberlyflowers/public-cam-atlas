@@ -21,7 +21,7 @@ export default function RoomPage() {
       <Link href="/"><ArrowLeft size={17}/> Map</Link>
       <div><MonitorPlay size={18}/><span><strong>Surveillance Room</strong><small>{cameras.length ? `${cameras.length} live walls` : "Opening feeds…"}</small></span></div>
       <label>Outside<select value={scene} onChange={(event) => setScene(event.target.value)}><option value="cliff-beach">Cliffs + beach</option><option value="sunset">Ocean sunset</option><option value="city">Night city</option><option value="mountains">Alpine lake</option></select></label>
-      <button id="enter-vr"><Glasses size={17}/> Enter VR</button>
+      <button id="enter-vr" onClick={() => window.dispatchEvent(new Event("surveillance-enter-vr"))}><Glasses size={17}/> Enter VR</button>
     </div>
     <SurveillanceRoom cameras={cameras} exterior={scene}/>
     <div className="room-help">Drag to look · Scroll to move · On Meta Quest, open this page in the browser and choose Enter VR</div>

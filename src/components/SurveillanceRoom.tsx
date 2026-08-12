@@ -1,7 +1,8 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, RoundedBox, Text } from "@react-three/drei";
+import { createXRStore, XR, XROrigin } from "@react-three/xr";
 import Hls from "hls.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -42,22 +43,14 @@ function Exterior({ type }: { type: string }) {
   </group>;
 }
 
-function XRSetup() {
-  const { gl } = useThree();
+const xrStore = createXRStore({ bounded: false, hand: true, controller: true });
+
+function XRBridge() {
   useEffect(() => {
-    // WebXR is opt-in because the same renderer also supports desktop exploration.
-    // eslint-disable-next-line react-hooks/immutability
-    gl.xr.enabled = true;
-    const button = document.getElementById("enter-vr");
-    const onClick = async () => {
-      const xr = (navigator as Navigator & { xr?: { requestSession: (mode: string, options?: object) => Promise<XRSession> } }).xr;
-      if (!xr) { alert("WebXR is available in the Meta Quest browser. You can still explore this room in 3D here."); return; }
-      try { const session = await xr.requestSession("immersive-vr", { optionalFeatures: ["local-floor", "bounded-floor"] }); await gl.xr.setSession(session); }
-      catch { /* The browser shows its own permission or availability message. */ }
-    };
-    button?.addEventListener("click", onClick);
-    return () => button?.removeEventListener("click", onClick);
-  }, [gl]);
+    const enter = () => void xrStore.enterVR().catch(() => alert("Meta Quest Browser did not grant immersive VR. Refresh the page and allow the VR permission prompt."));
+    window.addEventListener("surveillance-enter-vr", enter);
+    return () => window.removeEventListener("surveillance-enter-vr", enter);
+  }, []);
   return null;
 }
 
@@ -66,7 +59,7 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
   useFrame(({ clock }) => { if (glow.current) glow.current.intensity = 18 + Math.sin(clock.elapsedTime * .5) * 2; });
   const positions = useMemo(() => [[-3.6, 3.05, -4.7], [0, 3.05, -4.7], [3.6, 3.05, -4.7], [-3.6, .95, -4.7], [0, .95, -4.7], [3.6, .95, -4.7], [-3.6, -1.15, -4.7], [0, -1.15, -4.7], [3.6, -1.15, -4.7]] as [number, number, number][], []);
   return <>
-    <XRSetup/><color attach="background" args={["#06100d"]}/><fog attach="fog" args={["#06100d", 13, 30]}/>
+    <color attach="background" args={["#06100d"]}/><fog attach="fog" args={["#06100d", 13, 30]}/>
     <ambientLight intensity={1.1}/><pointLight ref={glow} position={[0, 5, 1]} color="#78d9ba" distance={18}/>
     <mesh position={[0, -2.2, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#101916" roughness={.72} metalness={.18}/></mesh>
     <mesh position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#111a17"/></mesh>
@@ -79,5 +72,5 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
 }
 
 export default function SurveillanceRoom(props: { cameras: CameraRecord[]; exterior: string }) {
-  return <Canvas camera={{ position: [3.8, 1.3, 5.8], fov: 58 }} dpr={[1, 1.5]}><Room {...props}/></Canvas>;
+  return <><XRBridge/><Canvas camera={{ position: [3.8, 1.3, 5.8], fov: 58 }} dpr={[1, 1.5]}><XR store={xrStore}><XROrigin position={[0, 0, 2.8]}/><Room {...props}/></XR></Canvas></>;
 }
