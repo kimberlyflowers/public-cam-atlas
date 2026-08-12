@@ -21,7 +21,7 @@ export default function VideoWall({ cameras, onClose }: { cameras: CameraRecord[
     const element = grid.current;
     if (!element) return;
     if (offset > 0) setVisibleCount((count) => Math.min(matching.length, count + WALL_SIZE));
-    requestAnimationFrame(() => element.scrollBy({ top: offset * element.clientHeight * 0.92, behavior: "smooth" }));
+    requestAnimationFrame(() => requestAnimationFrame(() => element.scrollBy({ top: offset * element.clientHeight * 0.92, behavior: "smooth" })));
   }, [matching.length]);
 
   useEffect(() => {
