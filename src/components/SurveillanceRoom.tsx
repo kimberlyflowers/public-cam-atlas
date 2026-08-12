@@ -14,8 +14,9 @@ function LiveScreen({ camera, position }: { camera: CameraRecord; position: [num
     const video = document.createElement("video");
     video.muted = true; video.autoplay = true; video.playsInline = true; video.crossOrigin = "anonymous";
     let hls: Hls | undefined;
-    if (video.canPlayType("application/vnd.apple.mpegurl")) video.src = camera.streamUrl;
-    else if (Hls.isSupported()) { hls = new Hls({ maxBufferLength: 8, liveSyncDurationCount: 2 }); hls.loadSource(camera.streamUrl); hls.attachMedia(video); }
+    const streamUrl = camera.streamUrl.includes("wzmedia.dot.ca.gov") ? `/api/hls?url=${encodeURIComponent(camera.streamUrl)}` : camera.streamUrl;
+    if (video.canPlayType("application/vnd.apple.mpegurl")) video.src = streamUrl;
+    else if (Hls.isSupported()) { hls = new Hls({ maxBufferLength: 8, liveSyncDurationCount: 2 }); hls.loadSource(streamUrl); hls.attachMedia(video); }
     const onPlaying = () => { const next = new THREE.VideoTexture(video); next.colorSpace = THREE.SRGBColorSpace; setTexture(next); };
     video.addEventListener("playing", onPlaying, { once: true });
     void video.play().catch(() => undefined);
@@ -77,9 +78,12 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
   return <>
     <color attach="background" args={["#06100d"]}/><fog attach="fog" args={["#06100d", 13, 30]}/>
     <ambientLight intensity={1.1}/><pointLight ref={glow} position={[0, 5, 1]} color="#78d9ba" distance={18}/>
-    <mesh position={[0, -2.2, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#101916" roughness={.72} metalness={.18}/></mesh>
-    <mesh position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#111a17"/></mesh>
-    <mesh position={[0, 1.3, -4.9]}><boxGeometry args={[12.4, 7.2, .25]}/><meshStandardMaterial color="#101b18" metalness={.3}/></mesh>
+    <mesh position={[0, -2.2, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#302f2c" roughness={.34} metalness={.22}/></mesh>
+    {Array.from({length:11}).map((_,i)=><mesh key={`floor-${i}`} position={[-5+i, -2.185, 0]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.018,20]}/><meshBasicMaterial color="#77726a"/></mesh>)}
+    <mesh position={[0, 4.7, 0]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[22, 22]}/><meshStandardMaterial color="#4a4741" roughness={.9}/></mesh>
+    {[-3.7,0,3.7].map((x)=><mesh key={`light-${x}`} position={[x,4.63,0]} rotation={[Math.PI/2,0,0]}><planeGeometry args={[.12,9]}/><meshBasicMaterial color="#ffe0aa"/></mesh>)}
+    <mesh position={[0, 1.3, -4.9]}><boxGeometry args={[12.4, 7.2, .25]}/><meshStandardMaterial color="#6b6359" roughness={.92}/></mesh>
+    {Array.from({length:25}).map((_,i)=><mesh key={`slat-${i}`} position={[-5.75+i*.48,1.3,-4.72]}><boxGeometry args={[.12,7,.14]}/><meshStandardMaterial color={i%2 ? "#3c2418":"#543424"} roughness={.68}/></mesh>)}
     {cameras.map((camera, index) => <LiveScreen key={camera.id} camera={camera} position={positions[index]}/>) }
     <Exterior type={exterior}/>
     <mesh position={[5.02, 1.25, 0]} rotation={[0, -Math.PI / 2, 0]}><boxGeometry args={[11.8, 6.4, .12]}/><meshPhysicalMaterial color="#9dddec" transmission={.72} transparent opacity={.18} roughness={.06}/></mesh>
@@ -87,6 +91,9 @@ function Room({ cameras, exterior }: { cameras: CameraRecord[]; exterior: string
     <mesh position={[4.94, -1.95, 0]}><boxGeometry args={[.16, .18, 11.8]}/><meshStandardMaterial color="#111816" metalness={.8}/></mesh>
     <mesh position={[4.94, 4.45, 0]}><boxGeometry args={[.16, .18, 11.8]}/><meshStandardMaterial color="#111816" metalness={.8}/></mesh>
     <RoundedBox args={[4.8, .18, 1.35]} radius={.06} position={[0, -.65, 1.5]}><meshStandardMaterial color="#33251d" roughness={.45}/></RoundedBox>
+    {[-1.9,1.9].map((x)=><mesh key={`leg-${x}`} position={[x,-1.42,1.5]}><boxGeometry args={[.18,1.45,1.05]}/><meshStandardMaterial color="#171c1a" metalness={.75}/></mesh>)}
+    <RoundedBox args={[1.1,.18,1.1]} radius={.08} position={[0,-1.05,3]}><meshStandardMaterial color="#171a19" roughness={.55}/></RoundedBox>
+    <mesh position={[0,-.25,3]}><boxGeometry args={[.13,1.5,.13]}/><meshStandardMaterial color="#1b211f" metalness={.75}/></mesh>
     <OrbitControls target={[0, .8, -2]} minDistance={2.4} maxDistance={10} maxPolarAngle={Math.PI * .62}/>
   </>;
 }
