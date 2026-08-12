@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Maximize2, Minimize2, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Search, X } from "lucide-react";
 import type { CameraRecord } from "@/lib/camera";
 import CameraPanel, { Player } from "@/components/CameraPanel";
 
@@ -65,6 +65,10 @@ export default function VideoWall({ cameras, onClose }: { cameras: CameraRecord[
       {visible.length < matching.length && <div className="wall-loading">Scroll for more cameras</div>}
     </div>
     <footer className="wall-footer">Scroll down for more · Use ← and → for screen-sized jumps · Click any camera for details</footer>
-    {focused && <div className="wall-detail"><CameraPanel key={focused.id} camera={focused} onClose={() => setFocused(null)} onPrevious={() => selectFocused(-1)} onNext={() => selectFocused(1)} position={focusedIndex + 1} total={matching.length}/></div>}
+    {focused && <div className="wall-detail">
+      <button className="wall-detail-nav previous" onClick={() => selectFocused(-1)} aria-label="Previous camera"><ChevronLeft size={30}/></button>
+      <CameraPanel key={focused.id} camera={focused} onClose={() => setFocused(null)} onPrevious={() => selectFocused(-1)} onNext={() => selectFocused(1)} position={focusedIndex + 1} total={matching.length}/>
+      <button className="wall-detail-nav next" onClick={() => selectFocused(1)} aria-label="Next camera"><ChevronRight size={30}/></button>
+    </div>}
   </section>;
 }
