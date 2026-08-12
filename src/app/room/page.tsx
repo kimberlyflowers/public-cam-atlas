@@ -13,8 +13,13 @@ export default function RoomPage() {
   const [scene, setScene] = useState("cliff-beach");
   const [vrStatus, setVrStatus] = useState("Checking VR…");
   useEffect(() => {
-    fetch("/api/cameras").then((response) => response.json()).then((data) => {
-      setCameras((data.cameras || []).filter((camera: CameraRecord) => camera.streamType === "hls").slice(0, 9));
+    fetch("/api/cameras").then((response) => response.json()).then(async (data) => {
+      const candidates = (data.cameras || []).filter((camera: CameraRecord) => camera.streamType === "hls" && camera.streamUrl.includes("wzmedia.dot.ca.gov")).slice(0, 24);
+      const checks = await Promise.all(candidates.map(async (camera: CameraRecord) => {
+        const response = await fetch(`/api/hls?url=${encodeURIComponent(camera.streamUrl)}`);
+        return response.ok ? camera : null;
+      }));
+      setCameras(checks.filter((camera): camera is CameraRecord => camera !== null).slice(0, 9));
     }).catch(() => undefined);
     navigator.xr?.isSessionSupported("immersive-vr").then((supported) => setVrStatus(supported ? "VR ready" : "Immersive VR unavailable")).catch(() => setVrStatus("Immersive VR unavailable"));
   }, []);
