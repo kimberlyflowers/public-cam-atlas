@@ -132,10 +132,10 @@ function StandardPlayer({ camera, startDelayMs = 0 }: { camera: CameraRecord; st
   </>;
   /* Live proxy URL is intentionally rendered without Next image optimization. */
   /* eslint-disable @next/next/no-img-element */
-  return <div className="player-frame">
-    {playback === "unavailable" && camera.previewUrl && <img className="player" src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}&t=${stamp}`} alt={`Latest view from ${camera.title}`}/>}
-    <video className="player" ref={video} autoPlay muted controls playsInline style={playback === "unavailable" && camera.previewUrl ? { display: "none" } : undefined} onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
-    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? "Connecting…" : playback === "retrying" ? "Reconnecting…" : camera.previewUrl ? "Live video paused — showing latest official image" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
+  return <div className={`player-frame ${camera.previewUrl ? "has-preview" : ""}`}>
+    {camera.previewUrl && <img className="player player-preview" src={`/api/image?url=${encodeURIComponent(camera.previewUrl)}&t=${stamp}`} alt={`Latest view from ${camera.title}`}/>}
+    <video className="player player-video" ref={video} autoPlay muted controls playsInline style={playback === "playing" || !camera.previewUrl ? undefined : { opacity: 0 }} onPlaying={() => setPlayback("playing")} onWaiting={() => setPlayback((value) => value === "playing" ? "retrying" : value)} onError={() => setPlayback("unavailable")}/>
+    {playback !== "playing" && <div className={`playback-state ${playback}`}><span>{playback === "connecting" ? camera.previewUrl ? "Opening live video — showing current official image" : "Connecting…" : playback === "retrying" ? camera.previewUrl ? "Reconnecting video — current image remains live" : "Reconnecting…" : camera.previewUrl ? "Video is currently unavailable — showing current official image" : "Feed is not responding"}</span>{playback === "unavailable" && <button onClick={() => setAttempt((value) => value + 1)}>Retry video</button>}</div>}
   </div>;
 }
 
